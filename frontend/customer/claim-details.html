@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claim Details - Kavach Setu</title>
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <style>
+        body {
+            background-color: var(--gray-50);
+        }
+
+        .claim-header {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .claim-id {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-start);
+            margin-bottom: 0.5rem;
+        }
+
+        .claim-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 968px) {
+            .claim-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: var(--gray-600);
+            font-weight: 500;
+        }
+
+        .info-value {
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .status-timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 2rem;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -1.5rem;
+            top: 0.5rem;
+            width: 1rem;
+            height: 1rem;
+            border-radius: 50%;
+            background: var(--gray-300);
+        }
+
+        .timeline-item.completed::before {
+            background: var(--success);
+        }
+
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            left: calc(-1.5rem + 0.4rem);
+            top: 1.5rem;
+            width: 2px;
+            height: calc(100% - 1rem);
+            background: var(--gray-200);
+        }
+
+        .timeline-item:last-child::after {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="dashboard.html" class="navbar-brand">🛡️ Kavach Setu</a>
+            <div class="navbar-menu">
+                <a href="dashboard.html" class="navbar-link">Dashboard</a>
+                <a href="submit-claim.html" class="navbar-link">File Claim</a>
+                <span id="userDisplay" class="navbar-link"></span>
+                <button onclick="auth.logout()" class="navbar-logout">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
+        <a href="dashboard.html" class="btn btn-secondary btn-sm mb-2">← Back to Dashboard</a>
+
+        <div class="claim-header">
+            <div class="claim-id" id="claimId">Loading...</div>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <span id="statusBadge"></span>
+                <span id="riskBadge"></span>
+                <a href="#" onclick="uploadDocuments()" id="btnUploadDocs" class="btn btn-primary" style="display: none;">
+                    📤 Upload Documents
+                </a>
+            </div>
+        </div>
+
+        <div class="claim-grid">
+            <!-- Left Column: Claim Details -->
+            <div>
+                <div class="card">
+                    <h3>Patient Information</h3>
+                    <div id="patientInfo">
+                        <div style="text-align: center; padding: 2rem;">
+                            <div class="spinner"></div>
+                            <p>Loading claim details...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Hospitalization Details</h3>
+                    <div id="hospitalInfo"></div>
+                </div>
+
+                <div class="card">
+                    <h3>Financial Information</h3>
+                    <div id="financialInfo"></div>
+                </div>
+
+                <div class="card" id="decisionCard" class="hidden">
+                    <h3>Decision</h3>
+                    <div id="decisionInfo"></div>
+                </div>
+            </div>
+
+            <!-- Right Column: Status & Documents -->
+            <div>
+                <div class="card">
+                    <h3>Claim Status</h3>
+                    <div class="status-timeline" id="statusTimeline"></div>
+                </div>
+
+                <div class="card">
+                    <h3>AI Analysis</h3>
+                    <div id="aiAnalysisInfo">
+                        <p style="color: var(--gray-600); font-size: 0.875rem;">
+                            AI analysis results will appear here once processing is complete.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../assets/js/config.js"></script>
+    <script src="../assets/js/auth.js"></script>
+    <script src="../assets/js/api.js"></script>
+    <script>
+        // Check authentication
+        if (!auth.requireAuth()) {
+            // Will redirect to login
+        }
+
+        // Get claim ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const claimId = urlParams.get('claim_id');
+
+        if (!claimId) {
+            api.showError('No claim ID provided');
+            setTimeout(() => window.location.href = 'dashboard.html', 2000);
+        }
+
+        // Load user info
+        const userInfo = JSON.parse(localStorage.getItem('user_info'));
+        if (userInfo) {
+            document.getElementById('userDisplay').textContent = userInfo.email;
+        }
+
+        // Load claim details on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadClaimDetails();
+        });
+
+        async function loadClaimDetails() {
+            try {
+                const claim = await api.call(
+                    getApiUrl(API_CONFIG.CUSTOMER.CLAIM_DETAILS, { claim_id: claimId }) + '/' + claimId,
+                    { method: 'GET' }
+                );
+
+                // Update header
+                document.getElementById('claimId').textContent = claim.claim_id;
+                document.getElementById('statusBadge').innerHTML = utils.getStatusBadge(claim.status);
+                if (claim.risk_level) {
+                    document.getElementById('riskBadge').innerHTML = utils.getRiskBadge(claim.risk_level);
+                }
+
+                // Show upload button if status is pending_documents
+                if (claim.status === 'pending_documents' || claim.status === 'submitted') {
+                    document.getElementById('btnUploadDocs').style.display = 'inline-block';
+                }
+
+                // Patient Info
+                document.getElementById('patientInfo').innerHTML = `
+                    <div class="info-row">
+                        <span class="info-label">Patient Name</span>
+                        <span class="info-value">${claim.patient_name}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Age</span>
+                        <span class="info-value">${claim.patient_age || 'N/A'}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Policy Number</span>
+                        <span class="info-value">${claim.policy_id}</span>
+                    </div>
+                `;
+
+                // Hospital Info
+                document.getElementById('hospitalInfo').innerHTML = `
+                    <div class="info-row">
+                        <span class="info-label">Hospital Name</span>
+                        <span class="info-value">${claim.hospital_name || 'N/A'}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Location</span>
+                        <span class="info-value">${claim.hospital_location || 'N/A'}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Admission Date</span>
+                        <span class="info-value">${utils.formatDate(claim.admission_date)}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Discharge Date</span>
+                        <span class="info-value">${utils.formatDate(claim.discharge_date)}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Diagnosis</span>
+                        <span class="info-value">${claim.diagnosis || 'N/A'}</span>
+                    </div>
+                `;
+
+                // Financial Info
+                document.getElementById('financialInfo').innerHTML = `
+                    <div class="info-row">
+                        <span class="info-label">Claim Amount</span>
+                        <span class="info-value" style="font-size: 1.5rem; color: var(--primary-start);">
+                            ${utils.formatCurrency(claim.claim_amount)}
+                        </span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Submitted On</span>
+                        <span class="info-value">${utils.formatDate(claim.submitted_at)}</span>
+                    </div>
+                `;
+
+                // Decision (if available)
+                if (claim.decision) {
+                    document.getElementById('decisionCard').classList.remove('hidden');
+                    document.getElementById('decisionInfo').innerHTML = `
+                        <div class="info-row">
+                            <span class="info-label">Decision</span>
+                            <span class="info-value">
+                                ${claim.decision === 'approved' ? '<span class="badge badge-success">APPROVED</span>' :
+                                  claim.decision === 'rejected' ? '<span class="badge badge-danger">REJECTED</span>' :
+                                  '<span class="badge badge-warning">ESCALATED</span>'}
+                            </span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Reason</span>
+                            <span class="info-value">${claim.decision_reason || 'N/A'}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Decided On</span>
+                            <span class="info-value">${utils.formatDate(claim.reviewed_at)}</span>
+                        </div>
+                    `;
+                }
+
+                // Status Timeline
+                renderTimeline(claim);
+
+                // AI Analysis
+                if (claim.ai_analysis_status === 'completed' && claim.risk_score) {
+                    document.getElementById('aiAnalysisInfo').innerHTML = `
+                        <div class="info-row">
+                            <span class="info-label">Risk Score</span>
+                            <span class="info-value">${claim.risk_score}/100</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Risk Level</span>
+                            <span class="info-value">${utils.getRiskBadge(claim.risk_level)}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">AI Status</span>
+                            <span class="info-value"><span class="badge badge-success">Completed</span></span>
+                        </div>
+                    `;
+                } else if (claim.ai_analysis_status === 'in_progress') {
+                    document.getElementById('aiAnalysisInfo').innerHTML = `
+                        <div style="text-align: center; padding: 1rem;">
+                            <div class="spinner"></div>
+                            <p style="color: var(--info); margin-top: 1rem;">AI analysis in progress...</p>
+                        </div>
+                    `;
+                }
+
+            } catch (error) {
+                console.error('Error loading claim:', error);
+                api.showError('Failed to load claim details');
+                setTimeout(() => window.location.href = 'dashboard.html', 2000);
+            }
+        }
+
+        function renderTimeline(claim) {
+            const timeline = document.getElementById('statusTimeline');
+            const statuses = [
+                { label: 'Claim Submitted', completed: true, date: claim.submitted_at },
+                { label: 'Documents Uploaded', completed: claim.status !== 'pending_documents', date: null },
+                { label: 'Under Review', completed: ['under_review', 'approved', 'rejected'].includes(claim.status), date: null },
+                { label: 'Decision Made', completed: claim.decision !== null, date: claim.reviewed_at }
+            ];
+
+            timeline.innerHTML = statuses.map(status => `
+                <div class="timeline-item ${status.completed ? 'completed' : ''}">
+                    <div style="font-weight: 600;">${status.label}</div>
+                    ${status.date ? `<div style="font-size: 0.875rem; color: var(--gray-600);">${utils.formatDate(status.date)}</div>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function uploadDocuments() {
+            window.location.href = `upload-documents.html?claim_id=${claimId}`;
+        }
+    </script>
+</body>
+</html>

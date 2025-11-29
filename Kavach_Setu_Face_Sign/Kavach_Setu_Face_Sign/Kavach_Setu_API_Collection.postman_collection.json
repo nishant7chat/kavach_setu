@@ -1,0 +1,180 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+		"name": "Kavach Setu - Agent APIs",
+		"description": "API collection for Signature Verification and Face Verification agents",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "12345678"
+	},
+	"item": [
+		{
+			"name": "Signature Verification API",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/health",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"health"
+							]
+						},
+						"description": "Check if Signature Verification API is running"
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Signatures - Genuine Match",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"signature1_path\": \"C:\\\\Workarea\\\\Adhish\\\\task\\\\Kavach Setu\\\\signature\\\\main_app\\\\sign_og.png\",\n    \"signature2_path\": \"C:\\\\Workarea\\\\Adhish\\\\task\\\\Kavach Setu\\\\signature\\\\main_app\\\\sign_og_true.png\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5000/verify",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"verify"
+							]
+						},
+						"description": "Test Case 1: Compare genuine signatures (sign_og.png vs sign_og_true.png)\nExpected: HIGH CONFIDENCE MATCH with score 80+"
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Signatures - Forgery Detection",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"signature1_path\": \"C:\\\\Workarea\\\\Adhish\\\\task\\\\Kavach Setu\\\\signature\\\\main_app\\\\sign_og.png\",\n    \"signature2_path\": \"C:\\\\Workarea\\\\Adhish\\\\task\\\\Kavach Setu\\\\signature\\\\main_app\\\\sign_forged.png\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5000/verify",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"verify"
+							]
+						},
+						"description": "Test Case 2: Compare genuine vs forged signature (sign_og.png vs sign_forged.png)\nExpected: POTENTIAL MISMATCH with score below 80"
+					},
+					"response": []
+				}
+			],
+			"description": "Signature Verification API endpoints using Gemini AI"
+		},
+		{
+			"name": "Face Verification API",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5001/health",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"health"
+							]
+						},
+						"description": "Check if Face Verification API is running"
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Faces - Aadhaar vs Selfie",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"image1_path\": \"C:\\\\Workarea\\\\Adhish\\\\task\\\\Kavach Setu\\\\face\\\\Image_folder\\\\Image_folder\\\\aadhar.jpg\",\n    \"image2_path\": \"C:\\\\Workarea\\\\Adhish\\\\task\\\\Kavach Setu\\\\face\\\\Image_folder\\\\Image_folder\\\\selfie.jpg\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5001/verify",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5001",
+							"path": [
+								"verify"
+							]
+						},
+						"description": "Test Case 1: Compare Aadhaar photo with Selfie (aadhar.jpg vs selfie.jpg)\nExpected: FACES MATCH with similarity score >= 0.45 (45%)"
+					},
+					"response": []
+				}
+			],
+			"description": "Face Verification API endpoints using DeepFace (ArcFace model)"
+		}
+	],
+	"variable": [
+		{
+			"key": "signature_api_base_url",
+			"value": "http://localhost:5000",
+			"type": "string"
+		},
+		{
+			"key": "face_api_base_url",
+			"value": "http://localhost:5001",
+			"type": "string"
+		}
+	]
+}

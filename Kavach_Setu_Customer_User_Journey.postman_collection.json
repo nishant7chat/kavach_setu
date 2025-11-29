@@ -1,0 +1,607 @@
+{
+  "info": {
+    "name": "Kavach Setu - Customer User Journey API",
+    "description": "Complete API collection for testing customer claim filing workflow from mobile app",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "claim_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "policy_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Customer Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Save token and user_id to collection variables",
+              "var jsonData = pm.response.json();",
+              "pm.collectionVariables.set(\"token\", jsonData.access_token);",
+              "pm.collectionVariables.set(\"user_id\", jsonData.user_id);",
+              "",
+              "// Test",
+              "pm.test(\"Login successful\", function () {",
+              "    pm.response.to.have.status(200);",
+              "    pm.expect(jsonData.access_token).to.exist;",
+              "    pm.expect(jsonData.user_id).to.exist;",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"rajesh.sharma@gmail.com\",\n  \"password\": \"password123\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/customer/login",
+          "host": ["{{base_url}}"],
+          "path": ["auth", "customer", "login"]
+        },
+        "description": "Login as customer to get JWT token. Test credentials:\n\n- Rajesh Kumar Sharma: rajesh.sharma@gmail.com / password123\n- Priya Patel: priya.patel@yahoo.com / password123\n- Amit Singh: amit.singh@outlook.com / password123\n- Sneha Reddy: sneha.reddy@gmail.com / password123\n- Vikram Mehta: vikram.mehta@gmail.com / password123"
+      },
+      "response": []
+    },
+    {
+      "name": "2. Get Customer Dashboard",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/customer/dashboard",
+          "host": ["{{base_url}}"],
+          "path": ["customer", "dashboard"]
+        },
+        "description": "Get customer dashboard with stats:\n- Active policies count\n- Total claims\n- Pending claims\n- Recent claims (last 5)"
+      },
+      "response": []
+    },
+    {
+      "name": "3. Get Active Policies",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Save first active policy ID for claim filing",
+              "var jsonData = pm.response.json();",
+              "if (jsonData.length > 0) {",
+              "    pm.collectionVariables.set(\"policy_id\", jsonData[0].policy_id);",
+              "}",
+              "",
+              "pm.test(\"Policies retrieved\", function () {",
+              "    pm.response.to.have.status(200);",
+              "    pm.expect(jsonData).to.be.an('array');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/customer/policies?status_filter=active",
+          "host": ["{{base_url}}"],
+          "path": ["customer", "policies"],
+          "query": [
+            {
+              "key": "status_filter",
+              "value": "active",
+              "description": "Filter by status: active, expired, cancelled"
+            }
+          ]
+        },
+        "description": "Get all active policies for the logged-in customer. \n\nThis is used by the chatbot to show policy selection dropdown.\n\nResponse includes:\n- policy_id\n- policy_number\n- policy_type\n- sum_insured\n- start_date / end_date\n- status"
+      },
+      "response": []
+    },
+    {
+      "name": "4. Get Screening Questions",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8000/config/claim_screening_questions.json",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["config", "claim_screening_questions.json"]
+        },
+        "description": "Get static screening questions JSON for chatbot conversation.\n\nThe chatbot asks these questions one by one:\n1. Reason for hospitalization\n2. Admission date\n3. Discharge date\n4. Hospital name\n5. Hospital location\n6. Claim amount\n\nNote: This is a static file served by the backend, not a database API."
+      },
+      "response": []
+    },
+    {
+      "name": "5. Submit New Claim",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Save claim_id for document upload",
+              "var jsonData = pm.response.json();",
+              "if (jsonData.claim_id) {",
+              "    pm.collectionVariables.set(\"claim_id\", jsonData.claim_id);",
+              "}",
+              "",
+              "pm.test(\"Claim submitted successfully\", function () {",
+              "    pm.response.to.have.status(200);",
+              "    pm.expect(jsonData.success).to.be.true;",
+              "    pm.expect(jsonData.claim_id).to.exist;",
+              "    pm.expect(jsonData.status).to.equal('pending_documents');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"policy_id\": \"{{policy_id}}\",\n  \"reason_for_hospitalization\": \"Acute Coronary Syndrome - Unstable Angina\",\n  \"admission_date\": \"2025-08-10\",\n  \"discharge_date\": \"2025-08-14\",\n  \"hospital_name\": \"Fortis Memorial Hospital\",\n  \"hospital_location\": \"Gurugram\",\n  \"claim_amount\": 144000,\n  \"patient_name\": \"Rajesh Kumar Sharma\",\n  \"patient_age\": 39,\n  \"relation_to_policyholder\": \"self\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/customer/claims/submit",
+          "host": ["{{base_url}}"],
+          "path": ["customer", "claims", "submit"]
+        },
+        "description": "Submit a new claim after collecting screening answers from chatbot.\n\nRequest body contains:\n- All screening question answers\n- Selected policy_id\n- Patient details (defaults to policyholder)\n\nValidations:\n- Policy must belong to user\n- Policy must be active\n- Claim amount must not exceed sum_insured\n- Discharge date must be after admission date\n\nResponse:\n- claim_id (use for document upload)\n- status: 'pending_documents'\n- next_step_url for document upload"
+      },
+      "response": []
+    },
+    {
+      "name": "6. Upload Document - Aadhaar",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "claim_id",
+              "value": "{{claim_id}}",
+              "type": "text"
+            },
+            {
+              "key": "document_type",
+              "value": "aadhaar",
+              "type": "text"
+            },
+            {
+              "key": "file",
+              "type": "file",
+              "src": "/path/to/aadhaar.pdf",
+              "description": "Select Aadhaar PDF file"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/documents/upload",
+          "host": ["{{base_url}}"],
+          "path": ["documents", "upload"]
+        },
+        "description": "Upload Aadhaar card (PDF only, max 10MB).\n\nDocument types allowed:\n- aadhaar\n- pan\n- signature\n- photo\n- hospital_bill\n- discharge_summary\n- prescription\n- lab_reports\n\nValidations:\n- PDF format only\n- Max 10MB file size\n- Claim must belong to user\n- Document type not already uploaded\n\nBackend processing:\n1. Saves PDF to filesystem\n2. Extracts images from PDF\n3. Template matching (placeholder)\n4. Returns verification status\n\nResponse includes:\n- document_id\n- file_name, file_size, page_count\n- template_verified status"
+      },
+      "response": []
+    },
+    {
+      "name": "7. Upload Document - PAN",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "claim_id",
+              "value": "{{claim_id}}",
+              "type": "text"
+            },
+            {
+              "key": "document_type",
+              "value": "pan",
+              "type": "text"
+            },
+            {
+              "key": "file",
+              "type": "file",
+              "src": "/path/to/pan.pdf",
+              "description": "Select PAN PDF file"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/documents/upload",
+          "host": ["{{base_url}}"],
+          "path": ["documents", "upload"]
+        },
+        "description": "Upload PAN card (PDF only, max 10MB).\n\nSame workflow as Aadhaar upload."
+      },
+      "response": []
+    },
+    {
+      "name": "8. Upload Document - Photo",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "claim_id",
+              "value": "{{claim_id}}",
+              "type": "text"
+            },
+            {
+              "key": "document_type",
+              "value": "photo",
+              "type": "text"
+            },
+            {
+              "key": "file",
+              "type": "file",
+              "src": "/path/to/photo.pdf",
+              "description": "Select Photo PDF file"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/documents/upload",
+          "host": ["{{base_url}}"],
+          "path": ["documents", "upload"]
+        },
+        "description": "Upload recent photo (PDF only, max 10MB).\n\n**IMPORTANT**: When photo is uploaded, backend automatically triggers:\n- Face verification against Aadhaar photo\n- Returns face match score and confidence level\n\nPrerequisite: Aadhaar must be uploaded first.\n\nResponse includes:\n- document_id and upload status\n- verification.face_verification:\n  - match: true/false\n  - similarity_score: 0-100\n  - confidence: high/medium/low"
+      },
+      "response": []
+    },
+    {
+      "name": "9. Upload Document - Signature",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "claim_id",
+              "value": "{{claim_id}}",
+              "type": "text"
+            },
+            {
+              "key": "document_type",
+              "value": "signature",
+              "type": "text"
+            },
+            {
+              "key": "file",
+              "type": "file",
+              "src": "/path/to/signature.pdf",
+              "description": "Select Signature PDF file"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/documents/upload",
+          "host": ["{{base_url}}"],
+          "path": ["documents", "upload"]
+        },
+        "description": "Upload signature (PDF only, max 10MB).\n\n**IMPORTANT**: When signature is uploaded, backend automatically triggers:\n- Signature verification against PAN signature\n- Returns signature match score\n\nPrerequisite: PAN must be uploaded first.\n\nResponse includes:\n- document_id and upload status\n- verification.signature_verification:\n  - match: true/false\n  - similarity_score: 0-100\n  - manual_review_required: true/false"
+      },
+      "response": []
+    },
+    {
+      "name": "10. Upload Document - Hospital Bill",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "claim_id",
+              "value": "{{claim_id}}",
+              "type": "text"
+            },
+            {
+              "key": "document_type",
+              "value": "hospital_bill",
+              "type": "text"
+            },
+            {
+              "key": "file",
+              "type": "file",
+              "src": "/path/to/hospital_bill.pdf",
+              "description": "Select Hospital Bill PDF file"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/documents/upload",
+          "host": ["{{base_url}}"],
+          "path": ["documents", "upload"]
+        },
+        "description": "Upload hospital bill (PDF only, max 10MB).\n\nNo automatic cross-verification for medical documents."
+      },
+      "response": []
+    },
+    {
+      "name": "11. Upload Document - Discharge Summary",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "claim_id",
+              "value": "{{claim_id}}",
+              "type": "text"
+            },
+            {
+              "key": "document_type",
+              "value": "discharge_summary",
+              "type": "text"
+            },
+            {
+              "key": "file",
+              "type": "file",
+              "src": "/path/to/discharge_summary.pdf",
+              "description": "Select Discharge Summary PDF file"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/documents/upload",
+          "host": ["{{base_url}}"],
+          "path": ["documents", "upload"]
+        },
+        "description": "Upload discharge summary (PDF only, max 10MB)."
+      },
+      "response": []
+    },
+    {
+      "name": "12. Get Verification Results",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/documents/verification/{{claim_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["documents", "verification", "{{claim_id}}"]
+        },
+        "description": "Get all verification results for the claim.\n\nReturns:\n- All uploaded documents with status\n- Face verification (photo vs Aadhaar):\n  - match: true/false\n  - similarity_score\n  - confidence_level\n  - status: ✅ MATCH / ❌ NO MATCH / ⏳ PENDING\n- Signature verification (signature vs PAN):\n  - match: true/false\n  - similarity_score\n  - manual_review_required\n  - status: ✅ MATCH / ❌ NO MATCH / ⏳ PENDING / ⚠️ NEEDS REVIEW\n- Overall summary:\n  - face_verification_passed\n  - signature_verification_passed\n  - all_passed\n  - needs_manual_review\n\nUse this to show verification status to customer before final submission."
+      },
+      "response": []
+    },
+    {
+      "name": "13. Trigger OCR Extraction",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/documents/extract/{{claim_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["documents", "extract", "{{claim_id}}"]
+        },
+        "description": "Trigger OCR extraction for all uploaded documents.\n\nThis processes all PDFs and extracts structured data (names, dates, amounts, etc.)\n\nValidations:\n- At least one document must be uploaded\n- No extraction job already running\n\nResponse:\n- job_id (use for status polling)\n- status: processing\n- total_documents\n- processed_documents\n\nNote: Use endpoint #14 to poll for completion status."
+      },
+      "response": []
+    },
+    {
+      "name": "14. Get OCR Extraction Status",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/documents/extraction-status/{{claim_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["documents", "extraction-status", "{{claim_id}}"]
+        },
+        "description": "Poll OCR extraction status.\n\nReturns:\n- job_id\n- status: not_started / processing / completed / partial / failed\n- total_documents\n- processed_documents\n- progress_percent (0-100)\n- started_at / completed_at timestamps\n- is_complete: true/false\n- error_message (if any)\n\nKeep polling until is_complete is true."
+      },
+      "response": []
+    },
+    {
+      "name": "15. Get Extracted OCR Data",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/documents/extracted-data/{{claim_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["documents", "extracted-data", "{{claim_id}}"]
+        },
+        "description": "Get all extracted OCR data for the claim.\n\nReturns structured data from all documents:\n- aadhaar: {name, aadhaar_number, dob, address, confidence, extracted_at}\n- pan: {name, pan_number, dob, confidence, extracted_at}\n- hospital_bill: {patient_name, total_amount, itemized_charges, hospital_name, confidence, extracted_at}\n- discharge_summary: {patient_name, diagnosis, procedures, admission_date, discharge_date, confidence, extracted_at}\n\nUse this to show extracted data to customer for final confirmation."
+      },
+      "response": []
+    },
+    {
+      "name": "16. Get My Claims",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/customer/claims?limit=10&offset=0",
+          "host": ["{{base_url}}"],
+          "path": ["customer", "claims"],
+          "query": [
+            {
+              "key": "limit",
+              "value": "10"
+            },
+            {
+              "key": "offset",
+              "value": "0"
+            }
+          ]
+        },
+        "description": "Get all claims filed by the customer.\n\nSupports pagination:\n- limit: number of claims per page (default 10)\n- offset: starting position (default 0)\n\nResponse:\n- Array of claims sorted by submitted_at (newest first)\n- Each claim includes:\n  - claim_id\n  - patient_name\n  - hospital_name\n  - claim_amount\n  - risk_score, risk_level\n  - status\n  - submitted_at\n  - decision (approved/rejected/escalated)"
+      },
+      "response": []
+    },
+    {
+      "name": "17. Get Claim Details",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/customer/claims/{{claim_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["customer", "claims", "{{claim_id}}"]
+        },
+        "description": "Get detailed information for a specific claim.\n\nSecurity: Customer can only view their own claims.\n\nResponse:\n- Complete claim details:\n  - claim_id, policy_id, patient info\n  - hospital details\n  - diagnosis, procedure\n  - admission/discharge dates\n  - claim_amount\n  - status, risk_level, ai_analysis_status\n  - decision, decision_reason, decision_at\n- All uploaded documents:\n  - document_id, document_type\n  - file_name, file_size\n  - uploaded_at\n\nUse this to show claim tracking status to customer."
+      },
+      "response": []
+    },
+    {
+      "name": "18. Delete Document (Re-upload)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/documents/{{claim_id}}/aadhaar",
+          "host": ["{{base_url}}"],
+          "path": ["documents", "{{claim_id}}", "aadhaar"]
+        },
+        "description": "Delete a document to allow re-upload.\n\nUse cases:\n- Customer uploaded wrong file\n- Document quality is poor\n- Need to update document\n\nDocument types: aadhaar, pan, photo, signature, hospital_bill, discharge_summary, prescription, lab_reports\n\nActions:\n1. Deletes PDF file from filesystem\n2. Deletes extracted images\n3. Removes document record from database\n4. Clears verification results (if photo/signature)\n\nResponse:\n- success: true\n- message: \"aadhaar deleted successfully. You can now re-upload.\"\n\nAfter deletion, customer can re-upload using endpoint #6-11."
+      },
+      "response": []
+    },
+    {
+      "name": "19. Check Verification Services Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/documents/health",
+          "host": ["{{base_url}}"],
+          "path": ["documents", "health"]
+        },
+        "description": "Check health of verification microservices.\n\nNo authentication required.\n\nReturns:\n- status: healthy / degraded\n- services:\n  - face_recognition_api: true/false\n  - signature_verification_api: true/false\n  - ocr_service: true/false\n\nUse this to show service status in the mobile app."
+      },
+      "response": []
+    }
+  ]
+}

@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claim Review - Kavach Setu Insurer Portal</title>
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <style>
+        body {
+            background-color: var(--gray-50);
+        }
+
+        .review-header {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .claim-id-large {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-start);
+            margin-bottom: 1rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .review-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 1024px) {
+            .review-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--gray-900);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .ai-agents-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .ai-agents-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .agent-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--gray-300);
+        }
+
+        .agent-card.success {
+            border-left-color: var(--success);
+        }
+
+        .agent-card.warning {
+            border-left-color: var(--warning);
+        }
+
+        .agent-card.danger {
+            border-left-color: var(--danger);
+        }
+
+        .agent-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .agent-title {
+            font-weight: 600;
+            font-size: 1.125rem;
+        }
+
+        .confidence-score {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .agent-result {
+            margin-bottom: 0.5rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .agent-result:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+        }
+
+        .result-value {
+            font-weight: 600;
+            margin-top: 0.25rem;
+        }
+
+        .risk-flags {
+            margin-top: 1rem;
+        }
+
+        .flag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+            margin: 0.25rem;
+        }
+
+        .hospital-panel {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .verify-btn {
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+
+        .verification-result {
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin-top: 1rem;
+        }
+
+        .decision-panel {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            position: sticky;
+            top: 2rem;
+        }
+
+        .decision-buttons {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .decision-btn {
+            padding: 1rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border: 2px solid transparent;
+            cursor: pointer;
+            border-radius: var(--radius);
+            transition: all 0.2s ease;
+        }
+
+        .decision-btn.selected {
+            border-color: currentColor;
+            transform: scale(1.02);
+        }
+
+        .decision-approve {
+            background: var(--success);
+            color: white;
+        }
+
+        .decision-reject {
+            background: var(--danger);
+            color: white;
+        }
+
+        .decision-escalate {
+            background: var(--warning);
+            color: white;
+        }
+
+        .summary-box {
+            background: var(--gray-50);
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            margin-bottom: 1.5rem;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+        }
+
+        .overall-risk {
+            text-align: center;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-radius: var(--radius-lg);
+        }
+
+        .overall-risk.low {
+            background: rgba(16, 185, 129, 0.1);
+            border: 2px solid var(--success);
+        }
+
+        .overall-risk.medium {
+            background: rgba(245, 158, 11, 0.1);
+            border: 2px solid var(--warning);
+        }
+
+        .overall-risk.high {
+            background: rgba(239, 68, 68, 0.1);
+            border: 2px solid var(--danger);
+        }
+
+        .risk-score-large {
+            font-size: 4rem;
+            font-weight: 700;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="dashboard.html" class="navbar-brand">🛡️ Kavach Setu - Insurer Portal</a>
+            <div class="navbar-menu">
+                <a href="dashboard.html" class="navbar-link">Claims Feed</a>
+                <span id="userDisplay" class="navbar-link"></span>
+                <button onclick="auth.logout()" class="navbar-logout">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
+        <a href="dashboard.html" class="btn btn-secondary btn-sm mb-2">← Back to Claims Feed</a>
+
+        <!-- Claim Header -->
+        <div class="review-header">
+            <div class="claim-id-large" id="claimIdDisplay">Loading...</div>
+            <div class="header-actions">
+                <span id="statusBadge"></span>
+                <span id="riskBadge"></span>
+                <button class="btn btn-primary" onclick="triggerAIAnalysis()" id="btnAnalyze">
+                    🤖 Run AI Analysis
+                </button>
+            </div>
+        </div>
+
+        <div class="review-grid">
+            <!-- Left Column: AI Analysis & Details -->
+            <div>
+                <!-- Overall Risk Assessment -->
+                <div class="overall-risk" id="overallRisk" style="display: none;">
+                    <h3>Overall Risk Assessment</h3>
+                    <div class="risk-score-large" id="riskScoreLarge">--</div>
+                    <div id="riskLevelText">Analyzing...</div>
+                </div>
+
+                <!-- AI Agents Analysis -->
+                <div class="section-title">
+                    🤖 AI Fraud Detection Agents
+                </div>
+
+                <div class="ai-agents-grid" id="aiAgentsContainer">
+                    <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+                        <p style="color: var(--gray-500);">
+                            Click "Run AI Analysis" to start fraud detection
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Hospital Verification -->
+                <div class="hospital-panel">
+                    <div class="section-title">
+                        🏥 Hospital Verification
+                    </div>
+
+                    <button class="btn btn-primary verify-btn" onclick="verifyWithHospital()">
+                        Verify with Hospital Database
+                    </button>
+
+                    <div id="hospitalResults" style="display: none;">
+                        <!-- Results will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Claim Details -->
+                <div class="card">
+                    <div class="section-title">📋 Claim Details</div>
+                    <div id="claimDetails">
+                        <div style="text-align: center; padding: 2rem;">
+                            <div class="spinner"></div>
+                            Loading claim details...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Decision Panel -->
+            <div>
+                <div class="decision-panel">
+                    <div class="section-title">⚖️ Decision</div>
+
+                    <div class="summary-box">
+                        <h4 style="margin-bottom: 1rem;">Quick Summary</h4>
+                        <div class="summary-item">
+                            <span>Claim Amount</span>
+                            <strong id="summaryAmount">--</strong>
+                        </div>
+                        <div class="summary-item">
+                            <span>Risk Level</span>
+                            <span id="summaryRisk">--</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>AI Status</span>
+                            <span id="summaryAI">--</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Hospital Verified</span>
+                            <span id="summaryHospital">--</span>
+                        </div>
+                    </div>
+
+                    <div class="decision-buttons">
+                        <button class="decision-btn decision-approve" onclick="selectDecision('approved')">
+                            ✅ Approve Claim
+                        </button>
+                        <button class="decision-btn decision-reject" onclick="selectDecision('rejected')">
+                            ❌ Reject Claim
+                        </button>
+                        <button class="decision-btn decision-escalate" onclick="selectDecision('escalated')">
+                            ⚠️ Escalate to Senior
+                        </button>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="decisionReason">Decision Reason *</label>
+                        <textarea
+                            id="decisionReason"
+                            rows="4"
+                            placeholder="Provide detailed reasoning for your decision..."
+                            required
+                        ></textarea>
+                    </div>
+
+                    <button class="btn btn-primary btn-block btn-lg" onclick="submitDecision()" id="btnSubmitDecision" disabled>
+                        Submit Decision
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../assets/js/config.js"></script>
+    <script src="../assets/js/auth.js"></script>
+    <script src="../assets/js/api.js"></script>
+    <script>
+        // Check authentication
+        if (!auth.requireAuth()) {
+            // Will redirect to login
+        }
+
+        // Get claim ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const claimId = urlParams.get('claim_id');
+
+        if (!claimId) {
+            api.showError('No claim ID provided');
+            setTimeout(() => window.location.href = 'dashboard.html', 2000);
+        }
+
+        let selectedDecision = null;
+        let claimData = null;
+        let aiAnalysisData = null;
+
+        // Load user info
+        const userInfo = JSON.parse(localStorage.getItem('user_info'));
+        if (userInfo) {
+            document.getElementById('userDisplay').textContent = `${userInfo.full_name} (${userInfo.role})`;
+        }
+
+        // Load claim on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadClaim();
+        });
+
+        async function loadClaim() {
+            try {
+                claimData = await api.call(
+                    getApiUrl(API_CONFIG.EMPLOYEE.CLAIM_DETAILS, { claim_id: claimId }) + '/' + claimId,
+                    { method: 'GET' }
+                );
+
+                displayClaimInfo();
+                checkAIAnalysisStatus();
+
+            } catch (error) {
+                console.error('Error loading claim:', error);
+                api.showError('Failed to load claim');
+            }
+        }
+
+        function displayClaimInfo() {
+            document.getElementById('claimIdDisplay').textContent = claimData.claim_id;
+            document.getElementById('statusBadge').innerHTML = utils.getStatusBadge(claimData.status);
+
+            if (claimData.risk_level) {
+                document.getElementById('riskBadge').innerHTML = utils.getRiskBadge(claimData.risk_level);
+            }
+
+            // Claim details
+            document.getElementById('claimDetails').innerHTML = `
+                <div class="info-row">
+                    <span class="info-label">Patient Name</span>
+                    <span class="info-value">${claimData.patient_name}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Hospital</span>
+                    <span class="info-value">${claimData.hospital_name || 'N/A'}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Location</span>
+                    <span class="info-value">${claimData.hospital_location || 'N/A'}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Diagnosis</span>
+                    <span class="info-value">${claimData.diagnosis || 'N/A'}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Admission Date</span>
+                    <span class="info-value">${utils.formatDate(claimData.admission_date)}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Discharge Date</span>
+                    <span class="info-value">${utils.formatDate(claimData.discharge_date)}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Claim Amount</span>
+                    <span class="info-value" style="font-size: 1.5rem; color: var(--primary-start);">
+                        ${utils.formatCurrency(claimData.claim_amount)}
+                    </span>
+                </div>
+            `;
+
+            // Summary
+            document.getElementById('summaryAmount').textContent = utils.formatCurrency(claimData.claim_amount);
+            document.getElementById('summaryRisk').innerHTML = claimData.risk_level ? utils.getRiskBadge(claimData.risk_level) : '--';
+            document.getElementById('summaryAI').innerHTML = getAIStatusBadge(claimData.ai_analysis_status);
+            document.getElementById('summaryHospital').textContent = '--';
+        }
+
+        function getAIStatusBadge(status) {
+            const badges = {
+                'completed': '<span class="badge badge-success">Complete</span>',
+                'in_progress': '<span class="badge badge-info">Processing</span>',
+                'pending': '<span class="badge badge-secondary">Pending</span>',
+                'failed': '<span class="badge badge-danger">Failed</span>'
+            };
+            return badges[status] || '<span class="badge badge-secondary">Unknown</span>';
+        }
+
+        async function checkAIAnalysisStatus() {
+            if (claimData.ai_analysis_status === 'completed') {
+                await loadAIAnalysis();
+            }
+        }
+
+        async function triggerAIAnalysis() {
+            try {
+                api.showLoading('Starting AI fraud analysis...');
+
+                await api.call(
+                    getApiUrl(API_CONFIG.FRAUD.ANALYZE, { claim_id: claimId }).replace('{claim_id}', claimId),
+                    { method: 'POST' }
+                );
+
+                api.hideLoading();
+                api.showSuccess('AI analysis started! This may take 30-60 seconds...');
+
+                // Poll for results
+                setTimeout(pollAIAnalysis, 5000);
+
+            } catch (error) {
+                api.hideLoading();
+                api.showError('Failed to start AI analysis');
+            }
+        }
+
+        async function pollAIAnalysis() {
+            try {
+                await loadAIAnalysis();
+            } catch (error) {
+                console.error('Error polling AI:', error);
+                setTimeout(pollAIAnalysis, 5000);
+            }
+        }
+
+        async function loadAIAnalysis() {
+            try {
+                aiAnalysisData = await api.call(
+                    getApiUrl(API_CONFIG.FRAUD.RESULT, { claim_id: claimId }).replace('{claim_id}', claimId),
+                    { method: 'GET' }
+                );
+
+                // Debug logging to see actual response structure
+                console.log('AI Analysis Response:', aiAnalysisData);
+                console.log('Status:', aiAnalysisData.status);
+                console.log('Has fraud_pattern_analysis?', !!aiAnalysisData.fraud_pattern_analysis);
+                console.log('Has fraud_report?', !!aiAnalysisData.fraud_report);
+
+                displayAIResults();
+
+            } catch (error) {
+                console.error('Error loading AI analysis:', error);
+            }
+        }
+
+        function displayAIResults() {
+            if (!aiAnalysisData || aiAnalysisData.status !== 'completed') {
+                console.log('AI data not ready. Status:', aiAnalysisData?.status);
+                return;
+            }
+
+            // Check if we have fraud_pattern_analysis structure
+            // It could be directly on aiAnalysisData OR nested in fraud_report
+            let fraudAnalysis = aiAnalysisData.fraud_pattern_analysis || aiAnalysisData.fraud_report?.fraud_pattern_analysis;
+
+            if (!fraudAnalysis) {
+                console.error('No fraud_pattern_analysis in response. Response structure:', Object.keys(aiAnalysisData));
+                console.error('Full response:', aiAnalysisData);
+
+                // Show a user-friendly error message
+                const container = document.getElementById('aiAgentsContainer');
+                container.innerHTML = `
+                    <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+                        <h3 style="color: var(--danger); margin-bottom: 1rem;">⚠️ Unable to Display Results</h3>
+                        <p style="color: var(--gray-600);">
+                            The AI analysis data structure is not in the expected format.
+                            <br>Please check the browser console for details.
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Show overall risk
+            const overallRiskDiv = document.getElementById('overallRisk');
+            overallRiskDiv.style.display = 'block';
+
+            const riskLevel = fraudAnalysis.risk_level || 'UNKNOWN';
+            overallRiskDiv.className = `overall-risk ${riskLevel.toLowerCase()}`;
+
+            document.getElementById('riskScoreLarge').textContent = fraudAnalysis.overall_risk_score || '--';
+            document.getElementById('riskLevelText').innerHTML = `
+                <div style="font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem;">
+                    ${riskLevel}
+                </div>
+                <div style="font-size: 1rem; color: var(--gray-600);">
+                    Fraud Probability: ${fraudAnalysis.fraud_probability}%
+                </div>
+                <div style="font-size: 0.875rem; margin-top: 0.5rem;">
+                    <strong>Recommendation:</strong>
+                    <span class="badge badge-${fraudAnalysis.recommendation === 'REJECT' ? 'danger' : fraudAnalysis.recommendation === 'APPROVE' ? 'success' : 'warning'}">
+                        ${fraudAnalysis.recommendation}
+                    </span>
+                </div>
+            `;
+
+            // Display agent results from cross_agent_analysis
+            const container = document.getElementById('aiAgentsContainer');
+            const crossAnalysis = fraudAnalysis.cross_agent_analysis || {};
+            const breakdown = fraudAnalysis.fraud_risk_breakdown || {};
+
+            // Get discrepancies by source
+            const allDiscrepancies = fraudAnalysis.all_discrepancies || [];
+            const getDiscrepanciesBySource = (source) => {
+                return allDiscrepancies.filter(d => d.source === source);
+            };
+
+            const agents = [
+                {
+                    title: '🎭 Identity Verification',
+                    confidence: crossAnalysis.identity_verification_score || 0,
+                    fraudDetected: crossAnalysis.identity_fraud_detected,
+                    riskScore: breakdown.identity_fraud_risk || 0,
+                    discrepancies: getDiscrepanciesBySource('identity_verification'),
+                    key: 'identity'
+                },
+                {
+                    title: '📄 Document Forensics',
+                    confidence: crossAnalysis.document_forensics_score || 0,
+                    fraudDetected: crossAnalysis.document_fraud_detected,
+                    riskScore: breakdown.document_tampering_risk || 0,
+                    discrepancies: getDiscrepanciesBySource('document_forensics'),
+                    key: 'document'
+                },
+                {
+                    title: '🏥 Medical Logic Validator',
+                    confidence: crossAnalysis.medical_logic_score || 0,
+                    fraudDetected: crossAnalysis.medical_fraud_detected,
+                    riskScore: breakdown.procedure_upcoding_risk || 0,
+                    discrepancies: getDiscrepanciesBySource('medical_logic'),
+                    key: 'medical'
+                },
+                {
+                    title: '🔍 Fraud Pattern Recognition',
+                    confidence: 100 - (fraudAnalysis.fraud_probability || 100),
+                    fraudDetected: fraudAnalysis.fraud_detected,
+                    riskScore: breakdown.fabricated_claim_risk || 0,
+                    discrepancies: getDiscrepanciesBySource('hospital_verification'),
+                    indicators: fraudAnalysis.consolidated_fraud_indicators || [],
+                    key: 'fraud'
+                }
+            ];
+
+            container.innerHTML = agents.map(agent => {
+                const confidence = agent.confidence;
+                const fraudDetected = agent.fraudDetected;
+
+                let status = 'pass';
+                let cardClass = 'success';
+
+                if (fraudDetected || confidence < 30) {
+                    status = 'fail';
+                    cardClass = 'danger';
+                } else if (confidence < 70) {
+                    status = 'warning';
+                    cardClass = 'warning';
+                }
+
+                // Get unique fraud indicators from discrepancies
+                const fraudIndicators = [...new Set(agent.discrepancies.map(d => d.fraud_indicator).filter(Boolean))];
+
+                // For fraud pattern agent, use consolidated indicators
+                const displayIndicators = agent.key === 'fraud' ? agent.indicators : fraudIndicators;
+
+                return `
+                    <div class="agent-card ${cardClass}">
+                        <div class="agent-header">
+                            <div class="agent-title">${agent.title}</div>
+                            <div class="confidence-score" style="color: var(--${cardClass});">
+                                ${confidence}%
+                            </div>
+                        </div>
+
+                        <div class="agent-result">
+                            <div class="result-label">Validation Status</div>
+                            <div class="result-value">
+                                ${status === 'pass' ? '<span class="badge badge-success">PASS</span>' :
+                                  status === 'warning' ? '<span class="badge badge-warning">WARNING</span>' :
+                                  '<span class="badge badge-danger">FAIL</span>'}
+                            </div>
+                        </div>
+
+                        ${agent.riskScore ? `
+                            <div class="agent-result">
+                                <div class="result-label">Risk Score</div>
+                                <div class="result-value" style="color: var(--${cardClass});">
+                                    ${agent.riskScore}/100
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        ${displayIndicators.length > 0 ? `
+                            <div class="risk-flags">
+                                <div class="result-label">Fraud Indicators (${displayIndicators.length})</div>
+                                ${displayIndicators.slice(0, 5).map(flag => `<span class="flag">${flag.replace(/_/g, ' ')}</span>`).join('')}
+                                ${displayIndicators.length > 5 ? `<span class="flag">+${displayIndicators.length - 5} more</span>` : ''}
+                            </div>
+                        ` : ''}
+
+                        ${agent.discrepancies.filter(d => d.severity === 'CRITICAL').length > 0 ? `
+                            <div class="agent-result" style="margin-top: 1rem;">
+                                <div class="result-label">Critical Issues (${agent.discrepancies.filter(d => d.severity === 'CRITICAL').length})</div>
+                                <div class="result-value" style="font-size: 0.875rem; font-weight: normal;">
+                                    ${agent.discrepancies.filter(d => d.severity === 'CRITICAL').slice(0, 2).map(d =>
+                                        `<div style="margin-top: 0.5rem; color: var(--danger);">• ${d.description}</div>`
+                                    ).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+
+            // Add fraud explanation summary at the bottom
+            if (fraudAnalysis.fraud_explanation) {
+                container.innerHTML += `
+                    <div class="card" style="grid-column: 1 / -1; background: rgba(239, 68, 68, 0.05); border-left: 4px solid var(--danger);">
+                        <h4 style="margin-bottom: 1rem; color: var(--danger);">🚨 Fraud Analysis Summary</h4>
+                        <p style="line-height: 1.6; color: var(--gray-700); margin-bottom: 1rem;">
+                            ${fraudAnalysis.fraud_explanation}
+                        </p>
+                        ${fraudAnalysis.recommended_actions && fraudAnalysis.recommended_actions.length > 0 ? `
+                            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--gray-200);">
+                                <strong>Recommended Actions:</strong>
+                                <ul style="margin-top: 0.5rem; padding-left: 1.5rem;">
+                                    ${fraudAnalysis.recommended_actions.map(action => `<li style="margin-bottom: 0.5rem;">${action}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                        ${fraudAnalysis.escalation_required ? `
+                            <div style="margin-top: 1rem; padding: 1rem; background: var(--warning); color: white; border-radius: var(--radius); font-weight: 600;">
+                                ⚠️ ESCALATION REQUIRED - This claim must be reviewed by fraud investigation team
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+
+            // Update summary
+            document.getElementById('summaryAI').innerHTML = '<span class="badge badge-success">Complete</span>';
+        }
+
+        async function verifyWithHospital() {
+            try {
+                api.showLoading('Verifying with hospital database...');
+
+                const result = await api.call(
+                    getApiUrl(API_CONFIG.HOSPITAL.VERIFY),
+                    {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            claim_id: claimId,
+                            hospital_code: claimData.hospital_code || 'HOSP-AUTO',
+                            patient_contact: '+91-9876543210'
+                        })
+                    }
+                );
+
+                api.hideLoading();
+
+                const resultsDiv = document.getElementById('hospitalResults');
+                resultsDiv.style.display = 'block';
+
+                const matchClass = result.match_status === 'VERIFIED' ? 'success' :
+                                 result.match_status === 'PARTIAL_MATCH' ? 'warning' : 'error';
+
+                resultsDiv.innerHTML = `
+                    <div class="verification-result ${matchClass}">
+                        <h4 style="margin-bottom: 1rem;">
+                            ${result.match_status === 'VERIFIED' ? '✅' : result.match_status === 'PARTIAL_MATCH' ? '⚠️' : '❌'}
+                            ${result.match_status}
+                        </h4>
+
+                        <div style="margin-bottom: 0.5rem;">
+                            <strong>Hospital:</strong> ${result.hospital_name}
+                        </div>
+                        <div style="margin-bottom: 0.5rem;">
+                            <strong>Location:</strong> ${result.hospital_location}
+                        </div>
+                        <div style="margin-bottom: 0.5rem;">
+                            <strong>Admission:</strong> ${result.admission_date}
+                        </div>
+                        <div style="margin-bottom: 0.5rem;">
+                            <strong>Discharge:</strong> ${result.discharge_date}
+                        </div>
+                        <div style="margin-bottom: 0.5rem;">
+                            <strong>Diagnosis:</strong> ${result.diagnosis}
+                        </div>
+                        <div style="margin-bottom: 0.5rem;">
+                            <strong>Amount:</strong> ${utils.formatCurrency(result.claim_amount)}
+                        </div>
+
+                        ${result.discrepancies && result.discrepancies.length > 0 ? `
+                            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid currentColor;">
+                                <strong>Discrepancies:</strong>
+                                <ul style="margin-top: 0.5rem; padding-left: 1.5rem;">
+                                    ${result.discrepancies.map(d => `<li>${d}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+
+                document.getElementById('summaryHospital').innerHTML =
+                    result.verified ?
+                    '<span class="badge badge-success">Verified</span>' :
+                    '<span class="badge badge-warning">Partial</span>';
+
+            } catch (error) {
+                api.hideLoading();
+                api.showError('Hospital verification failed');
+            }
+        }
+
+        function selectDecision(decision) {
+            selectedDecision = decision;
+
+            // Update button states
+            document.querySelectorAll('.decision-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+
+            // Enable submit button if reason is provided
+            checkSubmitEnabled();
+        }
+
+        function checkSubmitEnabled() {
+            const reason = document.getElementById('decisionReason').value.trim();
+            document.getElementById('btnSubmitDecision').disabled = !(selectedDecision && reason);
+        }
+
+        // Enable submit when reason is typed
+        document.getElementById('decisionReason').addEventListener('input', checkSubmitEnabled);
+
+        async function submitDecision() {
+            if (!selectedDecision) {
+                api.showError('Please select a decision');
+                return;
+            }
+
+            const reason = document.getElementById('decisionReason').value.trim();
+            if (!reason) {
+                api.showError('Please provide a decision reason');
+                return;
+            }
+
+            if (!confirm(`Are you sure you want to ${selectedDecision.toUpperCase()} this claim?`)) {
+                return;
+            }
+
+            try {
+                api.showLoading('Submitting decision...');
+
+                await api.call(
+                    getApiUrl(API_CONFIG.EMPLOYEE.SUBMIT_DECISION, { claim_id: claimId }).replace('{claim_id}', claimId) + '/decision',
+                    {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            decision: selectedDecision,
+                            decision_reason: reason
+                        })
+                    }
+                );
+
+                api.hideLoading();
+                api.showSuccess('Decision submitted successfully!');
+
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 2000);
+
+            } catch (error) {
+                api.hideLoading();
+                api.showError('Failed to submit decision');
+            }
+        }
+    </script>
+</body>
+</html>

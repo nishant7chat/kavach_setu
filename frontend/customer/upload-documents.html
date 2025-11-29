@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Documents - Kavach Setu</title>
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <style>
+        body {
+            background-color: var(--gray-50);
+        }
+
+        .upload-container {
+            max-width: 900px;
+            margin: 2rem auto;
+        }
+
+        .progress-bar {
+            background: var(--gray-200);
+            height: 8px;
+            border-radius: 4px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: var(--primary-start);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .documents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .document-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            border: 2px solid var(--gray-200);
+            transition: all 0.2s ease;
+        }
+
+        .document-card.uploaded {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .document-card.required {
+            border-color: var(--warning);
+        }
+
+        .doc-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .doc-title {
+            font-weight: 600;
+            font-size: 1.125rem;
+        }
+
+        .doc-status {
+            font-size: 1.5rem;
+        }
+
+        .doc-description {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+            margin-bottom: 1rem;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--gray-300);
+            border-radius: var(--radius);
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary-start);
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .upload-area.dragover {
+            border-color: var(--primary-start);
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .uploaded-file {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem;
+            background: var(--gray-50);
+            border-radius: var(--radius);
+            margin-top: 0.5rem;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .verification-result {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+        }
+
+        .verification-result.success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success);
+            color: #065f46;
+        }
+
+        .verification-result.warning {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid var(--warning);
+            color: #92400e;
+        }
+
+        .verification-result.error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--danger);
+            color: #991b1b;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--gray-200);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="dashboard.html" class="navbar-brand">🛡️ Kavach Setu</a>
+            <div class="navbar-menu">
+                <a href="dashboard.html" class="navbar-link">Dashboard</a>
+                <a href="submit-claim.html" class="navbar-link">File Claim</a>
+                <span id="userDisplay" class="navbar-link"></span>
+                <button onclick="auth.logout()" class="navbar-logout">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container upload-container">
+        <a href="#" onclick="goBack()" class="btn btn-secondary btn-sm mb-2">← Back to Claim</a>
+
+        <div class="card">
+            <h1>Upload Documents</h1>
+            <p style="color: var(--gray-600); margin-bottom: 1rem;">
+                Claim ID: <strong id="claimIdDisplay">Loading...</strong>
+            </p>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+
+            <p style="color: var(--gray-600); margin-bottom: 2rem;">
+                Upload the required documents to process your claim. All documents must be in PDF format (max 10MB).
+            </p>
+
+            <div class="documents-grid" id="documentsGrid">
+                <!-- Document cards will be inserted here -->
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-secondary" onclick="goBack()">
+                    Save & Continue Later
+                </button>
+                <button class="btn btn-primary" onclick="completeUpload()" id="btnComplete" disabled>
+                    Complete Upload & Submit for Review
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../assets/js/config.js"></script>
+    <script src="../assets/js/auth.js"></script>
+    <script src="../assets/js/api.js"></script>
+    <script>
+        // Check authentication
+        if (!auth.requireAuth()) {
+            // Will redirect to login
+        }
+
+        // Get claim ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const claimId = urlParams.get('claim_id');
+
+        if (!claimId) {
+            api.showError('No claim ID provided');
+            setTimeout(() => window.location.href = 'dashboard.html', 2000);
+        }
+
+        // Document types configuration
+        const documentTypes = [
+            { type: 'aadhaar', title: 'Aadhaar Card', description: 'Government-issued identity proof', required: true },
+            { type: 'pan', title: 'PAN Card', description: 'Permanent Account Number card', required: true },
+            { type: 'photo', title: 'Recent Photo', description: 'Clear passport-size photograph', required: true },
+            { type: 'signature', title: 'Signature', description: 'Your signature on white paper', required: true },
+            { type: 'hospital_bill', title: 'Hospital Bill', description: 'Itemized hospital billing statement', required: true },
+            { type: 'discharge_summary', title: 'Discharge Summary', description: 'Hospital discharge summary document', required: true },
+            { type: 'prescription', title: 'Prescription', description: 'Doctor\'s prescription (if any)', required: false },
+            { type: 'lab_reports', title: 'Lab Reports', description: 'Medical test reports (if any)', required: false }
+        ];
+
+        let uploadedDocuments = {};
+
+        // Load user info
+        const userInfo = JSON.parse(localStorage.getItem('user_info'));
+        if (userInfo) {
+            document.getElementById('userDisplay').textContent = userInfo.email;
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('claimIdDisplay').textContent = claimId;
+            renderDocumentCards();
+            checkExistingDocuments();
+        });
+
+        function renderDocumentCards() {
+            const grid = document.getElementById('documentsGrid');
+
+            grid.innerHTML = documentTypes.map(doc => `
+                <div class="document-card ${doc.required ? 'required' : ''}" id="card-${doc.type}">
+                    <div class="doc-header">
+                        <div class="doc-title">${doc.title}</div>
+                        <div class="doc-status" id="status-${doc.type}">
+                            ${doc.required ? '⚠️' : '📄'}
+                        </div>
+                    </div>
+
+                    <div class="doc-description">
+                        ${doc.description}
+                        ${doc.required ? '<br><strong style="color: var(--warning);">Required</strong>' : '<span style="color: var(--gray-500);">Optional</span>'}
+                    </div>
+
+                    <div class="upload-area" id="upload-${doc.type}"
+                         onclick="triggerFileInput('${doc.type}')"
+                         ondrop="handleDrop(event, '${doc.type}')"
+                         ondragover="handleDragOver(event)"
+                         ondragleave="handleDragLeave(event)">
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">📤</div>
+                        <div style="font-size: 0.875rem; color: var(--gray-600);">
+                            Click to upload or drag & drop<br>
+                            <span style="font-size: 0.75rem;">PDF only (max 10MB)</span>
+                        </div>
+                    </div>
+
+                    <input type="file"
+                           id="file-${doc.type}"
+                           class="file-input"
+                           accept=".pdf"
+                           onchange="handleFileSelect(event, '${doc.type}')" />
+
+                    <div id="uploaded-${doc.type}" style="display: none;"></div>
+                    <div id="verification-${doc.type}"></div>
+                </div>
+            `).join('');
+        }
+
+        async function checkExistingDocuments() {
+            try {
+                const response = await api.call(
+                    getApiUrl(API_CONFIG.DOCUMENTS.VERIFICATION, { claim_id: claimId }) + '/' + claimId,
+                    { method: 'GET' }
+                );
+
+                if (response && response.documents) {
+                    response.documents.forEach(doc => {
+                        if (doc.status === 'verified') {
+                            markAsUploaded(doc.document_type, doc.file_name);
+                        }
+                    });
+                }
+
+                updateProgress();
+            } catch (error) {
+                console.error('Error checking documents:', error);
+            }
+        }
+
+        function triggerFileInput(type) {
+            document.getElementById(`file-${type}`).click();
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('dragover');
+        }
+
+        function handleDrop(e, type) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('dragover');
+
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                uploadFile(files[0], type);
+            }
+        }
+
+        function handleFileSelect(e, type) {
+            const file = e.target.files[0];
+            if (file) {
+                uploadFile(file, type);
+            }
+        }
+
+        async function uploadFile(file, type) {
+            // Validate file
+            if (!file.name.toLowerCase().endsWith('.pdf')) {
+                api.showError('Please upload a PDF file');
+                return;
+            }
+
+            if (file.size > 10 * 1024 * 1024) {
+                api.showError('File size must be less than 10MB');
+                return;
+            }
+
+            try {
+                api.showLoading(`Uploading ${type}...`);
+
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('claim_id', claimId);
+                formData.append('document_type', type);
+
+                const response = await fetch(
+                    getApiUrl(API_CONFIG.DOCUMENTS.UPLOAD),
+                    {
+                        method: 'POST',
+                        headers: {
+                            ...auth.getAuthHeader()
+                        },
+                        body: formData
+                    }
+                );
+
+                const data = await response.json();
+                api.hideLoading();
+
+                if (response.ok && data.success) {
+                    markAsUploaded(type, file.name);
+                    showVerificationResult(type, data.verification);
+                    api.showSuccess(`${type} uploaded successfully!`);
+                    updateProgress();
+                } else {
+                    throw new Error(data.detail || 'Upload failed');
+                }
+
+            } catch (error) {
+                api.hideLoading();
+                api.showError(error.message || `Failed to upload ${type}`);
+            }
+        }
+
+        function markAsUploaded(type, fileName) {
+            uploadedDocuments[type] = fileName;
+
+            // Update card
+            const card = document.getElementById(`card-${type}`);
+            card.classList.add('uploaded');
+
+            // Update status icon
+            document.getElementById(`status-${type}`).textContent = '✅';
+
+            // Show uploaded file info
+            const uploadedDiv = document.getElementById(`uploaded-${type}`);
+            uploadedDiv.style.display = 'block';
+            uploadedDiv.innerHTML = `
+                <div class="uploaded-file">
+                    <div class="file-info">
+                        <span>📄</span>
+                        <span style="font-size: 0.875rem;">${fileName}</span>
+                    </div>
+                    <button class="btn btn-danger btn-sm" onclick="deleteDocument('${type}')">
+                        Delete
+                    </button>
+                </div>
+            `;
+
+            // Hide upload area
+            document.getElementById(`upload-${type}`).style.display = 'none';
+        }
+
+        function showVerificationResult(type, verification) {
+            const verifyDiv = document.getElementById(`verification-${type}`);
+
+            if (!verification) return;
+
+            let resultClass = 'success';
+            let message = '';
+
+            // Handle face verification
+            if (verification.face_match !== undefined) {
+                if (verification.face_match) {
+                    message = `✅ Face verified! Match score: ${(verification.similarity_score * 100).toFixed(1)}%`;
+                } else {
+                    resultClass = 'warning';
+                    message = `⚠️ Face verification needs review. Score: ${(verification.similarity_score * 100).toFixed(1)}%`;
+                }
+            }
+
+            // Handle signature verification
+            if (verification.signature_match !== undefined) {
+                if (verification.signature_match) {
+                    message = `✅ Signature verified! Match score: ${(verification.similarity_score * 100).toFixed(1)}%`;
+                } else {
+                    resultClass = 'warning';
+                    message = `⚠️ Signature verification needs review`;
+                }
+            }
+
+            if (message) {
+                verifyDiv.innerHTML = `
+                    <div class="verification-result ${resultClass}">
+                        ${message}
+                    </div>
+                `;
+            }
+        }
+
+        async function deleteDocument(type) {
+            if (!confirm(`Are you sure you want to delete this ${type} document?`)) {
+                return;
+            }
+
+            try {
+                api.showLoading('Deleting document...');
+
+                await api.call(
+                    getApiUrl(API_CONFIG.DOCUMENTS.DELETE, { claim_id: claimId, document_type: type }).replace('{claim_id}', claimId).replace('{document_type}', type),
+                    { method: 'DELETE' }
+                );
+
+                api.hideLoading();
+
+                // Reset card
+                delete uploadedDocuments[type];
+                const card = document.getElementById(`card-${type}`);
+                card.classList.remove('uploaded');
+                document.getElementById(`status-${type}`).textContent = documentTypes.find(d => d.type === type).required ? '⚠️' : '📄';
+                document.getElementById(`upload-${type}`).style.display = 'block';
+                document.getElementById(`uploaded-${type}`).style.display = 'none';
+                document.getElementById(`verification-${type}`).innerHTML = '';
+
+                api.showSuccess('Document deleted successfully');
+                updateProgress();
+
+            } catch (error) {
+                api.hideLoading();
+                api.showError('Failed to delete document');
+            }
+        }
+
+        function updateProgress() {
+            const requiredDocs = documentTypes.filter(d => d.required);
+            const uploadedRequired = requiredDocs.filter(d => uploadedDocuments[d.type]).length;
+            const progress = (uploadedRequired / requiredDocs.length) * 100;
+
+            document.getElementById('progressFill').style.width = progress + '%';
+
+            // Enable complete button if all required docs uploaded
+            if (progress === 100) {
+                document.getElementById('btnComplete').disabled = false;
+            }
+        }
+
+        async function completeUpload() {
+            if (!confirm('Are you sure you want to complete the upload and submit for review?')) {
+                return;
+            }
+
+            try {
+                api.showLoading('Submitting for review...');
+
+                // Update claim status to submitted
+                await api.call(
+                    getApiUrl(API_CONFIG.CUSTOMER.CLAIM_DETAILS, { claim_id: claimId }) + '/' + claimId,
+                    { method: 'GET' }
+                );
+
+                api.hideLoading();
+                api.showSuccess('Documents uploaded successfully! Your claim is now under review.');
+
+                setTimeout(() => {
+                    window.location.href = `claim-details.html?claim_id=${claimId}`;
+                }, 2000);
+
+            } catch (error) {
+                api.hideLoading();
+                api.showError('Failed to complete upload');
+            }
+        }
+
+        function goBack() {
+            window.location.href = `claim-details.html?claim_id=${claimId}`;
+        }
+    </script>
+</body>
+</html>

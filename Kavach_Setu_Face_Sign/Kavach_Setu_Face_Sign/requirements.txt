@@ -1,0 +1,23 @@
+# ============================================================================
+# Kavach Setu - Agent API Requirements
+# Requirements for signature_verification_api.py and face_verification_api.py
+# ============================================================================
+
+# Core Web Framework
+flask==3.0.0
+
+# Image Processing
+opencv-python==4.8.1.78
+Pillow==10.1.0
+
+# AI/ML Libraries
+google-genai==0.2.0
+deepface==0.0.79
+tensorflow==2.15.0
+
+# Utilities
+numpy==1.24.3
+requests==2.31.0
+
+# Optional: For better performance
+# tf-keras==2.15.0

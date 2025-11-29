@@ -1,0 +1,198 @@
+{
+  "info": {
+    "name": "Kavach Setu - Insurer Fraud Detection API",
+    "description": "Complete API collection for testing fraud detection workflow from insurer portal",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "claim_id",
+      "value": "CLM007",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Employee Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Save token to collection variable",
+              "var jsonData = pm.response.json();",
+              "pm.collectionVariables.set(\"token\", jsonData.access_token);",
+              "",
+              "// Test",
+              "pm.test(\"Login successful\", function () {",
+              "    pm.response.to.have.status(200);",
+              "    pm.expect(jsonData.access_token).to.exist;",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"arjun.sharma@kavachsetu.in\",\n  \"password\": \"password123\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/employee/login",
+          "host": ["{{base_url}}"],
+          "path": ["auth", "employee", "login"]
+        },
+        "description": "Login as underwriter to get JWT token"
+      },
+      "response": []
+    },
+    {
+      "name": "2. Get Claims Feed",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/claims/feed",
+          "host": ["{{base_url}}"],
+          "path": ["claims", "feed"]
+        },
+        "description": "Get all submitted claims for review"
+      },
+      "response": []
+    },
+    {
+      "name": "3. Get Claim Details",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/claims/{{claim_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["claims", "{{claim_id}}"]
+        },
+        "description": "Get detailed information for a specific claim"
+      },
+      "response": []
+    },
+    {
+      "name": "4. Hospital Verification (Manual)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claim_id\": \"{{claim_id}}\",\n  \"hospital_code\": \"HOSP-FMH-GRG-01\",\n  \"patient_contact\": \"+91-9876543210\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/hospital/verify",
+          "host": ["{{base_url}}"],
+          "path": ["hospital", "verify"]
+        },
+        "description": "Verify claim with hospital database (manual step before AI analysis)"
+      },
+      "response": []
+    },
+    {
+      "name": "5. START AI Fraud Analysis ⭐",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/fraud/{{claim_id}}/analyze",
+          "host": ["{{base_url}}"],
+          "path": ["fraud", "{{claim_id}}", "analyze"]
+        },
+        "description": "Trigger 4 AI agents for fraud detection (runs in background, takes 30-60 seconds)"
+      },
+      "response": []
+    },
+    {
+      "name": "6. Get Fraud Analysis Results",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/fraud/{{claim_id}}/result",
+          "host": ["{{base_url}}"],
+          "path": ["fraud", "{{claim_id}}", "result"]
+        },
+        "description": "Get results from all 4 AI fraud detection agents"
+      },
+      "response": []
+    },
+    {
+      "name": "7. Submit Claim Decision",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"decision\": \"approved\",\n  \"decision_reason\": \"All AI agents verified claim authenticity. Low fraud risk detected.\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/claims/{{claim_id}}/decision",
+          "host": ["{{base_url}}"],
+          "path": ["claims", "{{claim_id}}", "decision"]
+        },
+        "description": "Submit final decision (approved/rejected/escalated)"
+      },
+      "response": []
+    }
+  ]
+}

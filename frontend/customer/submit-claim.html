@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File New Claim - Kavach Setu</title>
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <style>
+        body {
+            background-color: var(--gray-50);
+        }
+
+        .form-container {
+            max-width: 800px;
+            margin: 2rem auto;
+        }
+
+        .form-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            padding: 0 1rem;
+        }
+
+        .step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+            padding: 0.5rem;
+        }
+
+        .step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 1rem;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background: var(--gray-300);
+            z-index: -1;
+        }
+
+        .step.active:not(:last-child)::after {
+            background: var(--primary-start);
+        }
+
+        .step-number {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            background: var(--gray-300);
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .step.active .step-number {
+            background: var(--primary-start);
+        }
+
+        .step.completed .step-number {
+            background: var(--success);
+        }
+
+        .step-label {
+            font-size: 0.75rem;
+            color: var(--gray-600);
+        }
+
+        .step.active .step-label {
+            color: var(--primary-start);
+            font-weight: 600;
+        }
+
+        .form-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            padding: 2rem;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--gray-200);
+        }
+
+        .policy-card {
+            border: 2px solid var(--gray-200);
+            padding: 1rem;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 1rem;
+        }
+
+        .policy-card:hover {
+            border-color: var(--primary-start);
+            background: var(--gray-50);
+        }
+
+        .policy-card.selected {
+            border-color: var(--primary-start);
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .policy-card input[type="radio"] {
+            margin-right: 1rem;
+        }
+
+        .success-animation {
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .success-icon {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            animation: scaleIn 0.5s ease;
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+            }
+            to {
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="dashboard.html" class="navbar-brand">🛡️ Kavach Setu</a>
+            <div class="navbar-menu">
+                <a href="dashboard.html" class="navbar-link">Dashboard</a>
+                <a href="submit-claim.html" class="navbar-link">File Claim</a>
+                <span id="userDisplay" class="navbar-link"></span>
+                <button onclick="auth.logout()" class="navbar-logout">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container form-container">
+        <h1>File New Insurance Claim</h1>
+        <p style="color: var(--gray-600); margin-bottom: 2rem;">
+            Follow the steps below to submit your claim
+        </p>
+
+        <!-- Progress Steps -->
+        <div class="form-steps">
+            <div class="step active" id="step1">
+                <div class="step-number">1</div>
+                <div class="step-label">Select Policy</div>
+            </div>
+            <div class="step" id="step2">
+                <div class="step-number">2</div>
+                <div class="step-label">Claim Details</div>
+            </div>
+            <div class="step" id="step3">
+                <div class="step-number">3</div>
+                <div class="step-label">Review & Submit</div>
+            </div>
+        </div>
+
+        <!-- Form Card -->
+        <div class="form-card">
+            <!-- Step 1: Select Policy -->
+            <div id="formStep1">
+                <h3>Select Policy for Claim</h3>
+                <p style="color: var(--gray-600); margin-bottom: 1.5rem;">
+                    Choose which insurance policy this claim is for
+                </p>
+
+                <div id="policiesContainer">
+                    <div style="text-align: center; padding: 2rem;">
+                        <div class="spinner"></div>
+                        <p>Loading your policies...</p>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="window.location.href='dashboard.html'">
+                        Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="goToStep2()" id="btnNext1" disabled>
+                        Next: Claim Details →
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 2: Claim Details -->
+            <div id="formStep2" class="hidden">
+                <h3>Claim Information</h3>
+                <p style="color: var(--gray-600); margin-bottom: 1.5rem;">
+                    Provide details about your hospitalization and treatment
+                </p>
+
+                <form id="claimForm">
+                    <div class="grid grid-cols-2">
+                        <div class="form-group">
+                            <label for="patient_name">Patient Name *</label>
+                            <input type="text" id="patient_name" name="patient_name" required />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="patient_age">Patient Age *</label>
+                            <input type="number" id="patient_age" name="patient_age" min="1" max="120" required />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="relation_to_policyholder">Relation to Policyholder *</label>
+                        <select id="relation_to_policyholder" name="relation_to_policyholder" required>
+                            <option value="">Select...</option>
+                            <option value="self">Self</option>
+                            <option value="spouse">Spouse</option>
+                            <option value="child">Child</option>
+                            <option value="parent">Parent</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reason_for_hospitalization">Reason for Hospitalization *</label>
+                        <textarea id="reason_for_hospitalization" name="reason_for_hospitalization" rows="3" required></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-2">
+                        <div class="form-group">
+                            <label for="admission_date">Admission Date *</label>
+                            <input type="date" id="admission_date" name="admission_date" required />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="discharge_date">Discharge Date *</label>
+                            <input type="date" id="discharge_date" name="discharge_date" required />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="hospital_name">Hospital Name *</label>
+                        <input type="text" id="hospital_name" name="hospital_name" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="hospital_location">Hospital Location (City) *</label>
+                        <input type="text" id="hospital_location" name="hospital_location" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="claim_amount">Claim Amount (₹) *</label>
+                        <input type="number" id="claim_amount" name="claim_amount" min="1" step="0.01" required />
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="goToStep1()">
+                            ← Back
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="goToStep3()">
+                            Next: Review →
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Step 3: Review & Submit -->
+            <div id="formStep3" class="hidden">
+                <h3>Review Your Claim</h3>
+                <p style="color: var(--gray-600); margin-bottom: 1.5rem;">
+                    Please verify all information before submitting
+                </p>
+
+                <div id="reviewContent"></div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="goToStep2()">
+                        ← Back to Edit
+                    </button>
+                    <button type="button" class="btn btn-primary btn-lg" onclick="submitClaim()" id="btnSubmit">
+                        Submit Claim
+                    </button>
+                </div>
+            </div>
+
+            <!-- Success State -->
+            <div id="successState" class="hidden">
+                <div class="success-animation">
+                    <div class="success-icon">✅</div>
+                    <h2>Claim Submitted Successfully!</h2>
+                    <p style="color: var(--gray-600); margin: 1rem 0 2rem;">
+                        Your claim has been submitted and is now being processed.
+                    </p>
+                    <p><strong>Claim ID:</strong> <span id="newClaimId" style="color: var(--primary-start); font-size: 1.25rem;"></span></p>
+                    <p style="margin-top: 2rem;">
+                        <strong>Next Step:</strong> Upload required documents (Aadhaar, PAN, Hospital bills, etc.)
+                    </p>
+                    <div class="form-actions" style="justify-content: center; border-top: none;">
+                        <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">
+                            Go to Dashboard
+                        </button>
+                        <button class="btn btn-primary" onclick="uploadDocuments()">
+                            Upload Documents →
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../assets/js/config.js"></script>
+    <script src="../assets/js/auth.js"></script>
+    <script src="../assets/js/api.js"></script>
+    <script>
+        // Check authentication
+        if (!auth.requireAuth()) {
+            // Will redirect to login
+        }
+
+        let selectedPolicyId = null;
+        let submittedClaimId = null;
+        let policies = [];
+
+        // Load user info
+        const userInfo = JSON.parse(localStorage.getItem('user_info'));
+        if (userInfo) {
+            document.getElementById('userDisplay').textContent = userInfo.email;
+        }
+
+        // Load policies on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadPolicies();
+        });
+
+        async function loadPolicies() {
+            try {
+                policies = await api.call(
+                    getApiUrl(API_CONFIG.CUSTOMER.POLICIES) + '?status_filter=active',
+                    { method: 'GET' }
+                );
+
+                const container = document.getElementById('policiesContainer');
+
+                if (!policies || policies.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 2rem; color: var(--gray-500);">
+                            <p>No active policies found.</p>
+                            <p>Please contact support if you believe this is an error.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = policies.map(policy => `
+                    <label class="policy-card" onclick="selectPolicy('${policy.policy_id}')">
+                        <input type="radio" name="policy" value="${policy.policy_id}" />
+                        <div>
+                            <strong>${policy.policy_number}</strong> - ${policy.policy_type}
+                            <br />
+                            <span style="color: var(--gray-600); font-size: 0.875rem;">
+                                Sum Insured: ${utils.formatCurrency(policy.sum_insured)} |
+                                Valid till: ${utils.formatDate(policy.end_date)}
+                            </span>
+                        </div>
+                    </label>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error loading policies:', error);
+                api.showError('Failed to load policies');
+            }
+        }
+
+        function selectPolicy(policyId) {
+            selectedPolicyId = policyId;
+            document.getElementById('btnNext1').disabled = false;
+
+            // Update selected state
+            document.querySelectorAll('.policy-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+        }
+
+        function goToStep1() {
+            showStep(1);
+        }
+
+        function goToStep2() {
+            if (!selectedPolicyId) {
+                api.showError('Please select a policy');
+                return;
+            }
+            showStep(2);
+        }
+
+        function goToStep3() {
+            const form = document.getElementById('claimForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            // Build review content
+            const formData = new FormData(form);
+            const selectedPolicy = policies.find(p => p.policy_id === selectedPolicyId);
+
+            document.getElementById('reviewContent').innerHTML = `
+                <div class="card">
+                    <h4>Policy Information</h4>
+                    <p><strong>Policy Number:</strong> ${selectedPolicy.policy_number}</p>
+                    <p><strong>Policy Type:</strong> ${selectedPolicy.policy_type}</p>
+                </div>
+
+                <div class="card">
+                    <h4>Patient Information</h4>
+                    <p><strong>Name:</strong> ${formData.get('patient_name')}</p>
+                    <p><strong>Age:</strong> ${formData.get('patient_age')}</p>
+                    <p><strong>Relation:</strong> ${formData.get('relation_to_policyholder')}</p>
+                </div>
+
+                <div class="card">
+                    <h4>Hospitalization Details</h4>
+                    <p><strong>Reason:</strong> ${formData.get('reason_for_hospitalization')}</p>
+                    <p><strong>Hospital:</strong> ${formData.get('hospital_name')}, ${formData.get('hospital_location')}</p>
+                    <p><strong>Admission Date:</strong> ${formData.get('admission_date')}</p>
+                    <p><strong>Discharge Date:</strong> ${formData.get('discharge_date')}</p>
+                    <p><strong>Claim Amount:</strong> ₹${parseFloat(formData.get('claim_amount')).toLocaleString('en-IN')}</p>
+                </div>
+            `;
+
+            showStep(3);
+        }
+
+        function showStep(stepNumber) {
+            // Hide all steps
+            document.getElementById('formStep1').classList.add('hidden');
+            document.getElementById('formStep2').classList.add('hidden');
+            document.getElementById('formStep3').classList.add('hidden');
+
+            // Show current step
+            document.getElementById('formStep' + stepNumber).classList.remove('hidden');
+
+            // Update progress
+            for (let i = 1; i <= 3; i++) {
+                const step = document.getElementById('step' + i);
+                if (i < stepNumber) {
+                    step.classList.add('completed');
+                    step.classList.remove('active');
+                } else if (i === stepNumber) {
+                    step.classList.add('active');
+                    step.classList.remove('completed');
+                } else {
+                    step.classList.remove('active', 'completed');
+                }
+            }
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function submitClaim() {
+            try {
+                const form = document.getElementById('claimForm');
+                const formData = new FormData(form);
+
+                const claimData = {
+                    policy_id: selectedPolicyId,
+                    patient_name: formData.get('patient_name'),
+                    patient_age: parseInt(formData.get('patient_age')),
+                    relation_to_policyholder: formData.get('relation_to_policyholder'),
+                    reason_for_hospitalization: formData.get('reason_for_hospitalization'),
+                    admission_date: formData.get('admission_date'),
+                    discharge_date: formData.get('discharge_date'),
+                    hospital_name: formData.get('hospital_name'),
+                    hospital_location: formData.get('hospital_location'),
+                    claim_amount: parseFloat(formData.get('claim_amount'))
+                };
+
+                api.showLoading('Submitting your claim...');
+
+                const response = await api.call(
+                    getApiUrl(API_CONFIG.CUSTOMER.SUBMIT_CLAIM),
+                    {
+                        method: 'POST',
+                        body: JSON.stringify(claimData)
+                    }
+                );
+
+                api.hideLoading();
+
+                if (response.success) {
+                    submittedClaimId = response.claim_id;
+                    document.getElementById('newClaimId').textContent = response.claim_id;
+
+                    // Show success state
+                    document.getElementById('formStep3').classList.add('hidden');
+                    document.getElementById('successState').classList.remove('hidden');
+
+                    api.showSuccess('Claim submitted successfully!');
+                }
+
+            } catch (error) {
+                api.hideLoading();
+                api.showError(error.message || 'Failed to submit claim');
+            }
+        }
+
+        function uploadDocuments() {
+            window.location.href = `upload-documents.html?claim_id=${submittedClaimId}`;
+        }
+    </script>
+</body>
+</html>

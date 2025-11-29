@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Dashboard - Kavach Setu</title>
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <style>
+        body {
+            background-color: var(--gray-50);
+        }
+
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-start);
+            margin: 0.5rem 0;
+        }
+
+        .stat-label {
+            color: var(--gray-600);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .claims-table {
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .table-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--gray-500);
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .claim-row {
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .claim-row:hover {
+            background-color: var(--gray-50);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="dashboard.html" class="navbar-brand">🛡️ Kavach Setu</a>
+            <div class="navbar-menu">
+                <a href="dashboard.html" class="navbar-link">Dashboard</a>
+                <a href="submit-claim.html" class="navbar-link">File Claim</a>
+                <span id="userDisplay" class="navbar-link"></span>
+                <button onclick="auth.logout()" class="navbar-logout">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
+        <h1>Welcome back, <span id="userName">Loading...</span>!</h1>
+        <p style="color: var(--gray-600); margin-bottom: 2rem;">
+            Here's an overview of your insurance claims
+        </p>
+
+        <!-- Stats Cards -->
+        <div class="dashboard-stats">
+            <div class="stat-card">
+                <div class="stat-label">Active Policies</div>
+                <div class="stat-value" id="statPolicies">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Claims</div>
+                <div class="stat-value" id="statTotalClaims">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Pending Claims</div>
+                <div class="stat-value" id="statPendingClaims">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Approved Claims</div>
+                <div class="stat-value" id="statApprovedClaims">-</div>
+            </div>
+        </div>
+
+        <!-- Recent Claims Table -->
+        <div class="claims-table">
+            <div class="table-header">
+                <h3 style="margin: 0;">Recent Claims</h3>
+                <a href="submit-claim.html" class="btn btn-primary">+ File New Claim</a>
+            </div>
+
+            <div id="claimsTableContainer">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Claim ID</th>
+                            <th>Patient Name</th>
+                            <th>Hospital</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Risk Level</th>
+                            <th>Submitted</th>
+                        </tr>
+                    </thead>
+                    <tbody id="claimsTableBody">
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 2rem;">
+                                <div class="spinner"></div>
+                                Loading claims...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div id="emptyState" class="empty-state hidden">
+                    <div class="empty-state-icon">📋</div>
+                    <h3>No Claims Yet</h3>
+                    <p>You haven't filed any insurance claims yet.</p>
+                    <a href="submit-claim.html" class="btn btn-primary mt-2">File Your First Claim</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../assets/js/config.js"></script>
+    <script src="../assets/js/auth.js"></script>
+    <script src="../assets/js/api.js"></script>
+    <script>
+        // Check authentication
+        if (!auth.requireAuth()) {
+            // Will redirect to login
+        }
+
+        // Load dashboard data on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadDashboard();
+        });
+
+        async function loadDashboard() {
+            try {
+                // Get user info
+                const userInfo = JSON.parse(localStorage.getItem('user_info'));
+                if (userInfo) {
+                    document.getElementById('userName').textContent = userInfo.full_name || 'User';
+                    document.getElementById('userDisplay').textContent = userInfo.email;
+                }
+
+                // Fetch dashboard stats
+                const dashboardData = await api.call(
+                    getApiUrl(API_CONFIG.CUSTOMER.DASHBOARD),
+                    { method: 'GET' }
+                );
+
+                // Update stats
+                document.getElementById('statPolicies').textContent = dashboardData.stats.active_policies || 0;
+                document.getElementById('statTotalClaims').textContent = dashboardData.stats.total_claims || 0;
+                document.getElementById('statPendingClaims').textContent = dashboardData.stats.pending_claims || 0;
+                document.getElementById('statApprovedClaims').textContent = dashboardData.stats.approved_claims || 0;
+
+                // Load recent claims
+                await loadClaims();
+
+            } catch (error) {
+                console.error('Dashboard error:', error);
+                api.showError('Failed to load dashboard data');
+            }
+        }
+
+        async function loadClaims() {
+            try {
+                const claims = await api.call(
+                    getApiUrl(API_CONFIG.CUSTOMER.CLAIMS) + '?limit=10&offset=0',
+                    { method: 'GET' }
+                );
+
+                const tbody = document.getElementById('claimsTableBody');
+                const emptyState = document.getElementById('emptyState');
+
+                if (!claims || claims.length === 0) {
+                    tbody.innerHTML = '';
+                    emptyState.classList.remove('hidden');
+                    return;
+                }
+
+                emptyState.classList.add('hidden');
+
+                // Populate table
+                tbody.innerHTML = claims.map(claim => `
+                    <tr class="claim-row" onclick="viewClaim('${claim.claim_id}')">
+                        <td><strong>${claim.claim_id}</strong></td>
+                        <td>${claim.patient_name}</td>
+                        <td>${claim.hospital_name || 'N/A'}</td>
+                        <td>${utils.formatCurrency(claim.claim_amount)}</td>
+                        <td>${utils.getStatusBadge(claim.status)}</td>
+                        <td>${utils.getRiskBadge(claim.risk_level)}</td>
+                        <td>${utils.formatDate(claim.submitted_at)}</td>
+                    </tr>
+                `).join('');
+
+            } catch (error) {
+                console.error('Claims error:', error);
+                document.getElementById('claimsTableBody').innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 2rem; color: var(--danger);">
+                            Failed to load claims
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        function viewClaim(claimId) {
+            window.location.href = `claim-details.html?claim_id=${claimId}`;
+        }
+    </script>
+</body>
+</html>

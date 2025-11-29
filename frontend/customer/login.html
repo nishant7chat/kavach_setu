@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Login - Kavach Setu</title>
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .login-container {
+            background: white;
+            padding: 3rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        h1 {
+            font-size: 1.75rem;
+            color: var(--gray-900);
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--gray-600);
+            font-size: 0.875rem;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: var(--primary-start);
+            text-decoration: none;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .test-credentials {
+            background: var(--gray-50);
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin-top: 1.5rem;
+            font-size: 0.875rem;
+        }
+
+        .test-credentials h4 {
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+            color: var(--gray-700);
+        }
+
+        .test-credentials p {
+            margin: 0.25rem 0;
+            color: var(--gray-600);
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <a href="../index.html" class="back-link">← Back to Home</a>
+
+        <div class="login-header">
+            <div class="logo">👤</div>
+            <h1>Customer Login</h1>
+            <p class="subtitle">Sign in to manage your insurance claims</p>
+        </div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="Enter your email"
+                    required
+                />
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="Enter your password"
+                    required
+                />
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block btn-lg">
+                Sign In
+            </button>
+        </form>
+
+        <div class="test-credentials">
+            <h4>Test Credentials:</h4>
+            <p><strong>Email:</strong> rajesh.sharma@gmail.com</p>
+            <p><strong>Password:</strong> password123</p>
+        </div>
+    </div>
+
+    <script src="../assets/js/config.js"></script>
+    <script src="../assets/js/auth.js"></script>
+    <script src="../assets/js/api.js"></script>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                api.showLoading('Signing in...');
+
+                const response = await api.call(
+                    getApiUrl(API_CONFIG.CUSTOMER.LOGIN),
+                    {
+                        method: 'POST',
+                        body: JSON.stringify({ email, password })
+                    }
+                );
+
+                // Save token and user info
+                auth.saveToken(response.access_token, 'customer');
+                auth.saveUserInfo({
+                    user_id: response.user_id,
+                    email: response.email,
+                    full_name: response.full_name
+                });
+
+                api.hideLoading();
+                api.showSuccess('Login successful!');
+
+                // Redirect to dashboard
+                setTimeout(() => {
+                    auth.handlePostLoginRedirect('dashboard.html');
+                }, 500);
+
+            } catch (error) {
+                api.hideLoading();
+                api.showError(error.message || 'Login failed. Please check your credentials.');
+            }
+        });
+    </script>
+</body>
+</html>

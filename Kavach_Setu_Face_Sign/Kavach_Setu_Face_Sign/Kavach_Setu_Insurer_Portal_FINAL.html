@@ -1,0 +1,1797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kavach Setu - Insurer Portal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 100%);
+            color: #e8e6e3;
+            min-height: 100vh;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* ============ LOGIN SCREEN ============ */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .login-box {
+            background: #1e2530;
+            padding: 50px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo-icon {
+            font-size: 60px;
+            margin-bottom: 10px;
+        }
+
+        .logo-text {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo-tagline {
+            color: #9ca3af;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #9ca3af;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            background: #2d3748;
+            border: 1px solid #4a5568;
+            border-radius: 6px;
+            color: #e8e6e3;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* ============ DASHBOARD SCREEN ============ */
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: #1e2530;
+            padding: 30px 20px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar-logo {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-item:hover {
+            background: #2d3748;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .stats-section {
+            margin-top: 40px;
+            padding: 20px;
+            background: #2d3748;
+            border-radius: 8px;
+        }
+
+        .stats-title {
+            font-size: 14px;
+            color: #9ca3af;
+            margin-bottom: 15px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+
+        .stat-value {
+            font-weight: 600;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 30px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .header-title {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .notification-badge {
+            position: relative;
+        }
+
+        .notification-badge::after {
+            content: '2';
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 18px;
+            height: 18px;
+            background: #ef4444;
+            border-radius: 50%;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .claims-feed {
+            background: #1e2530;
+            border-radius: 12px;
+            padding: 25px;
+        }
+
+        .feed-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #4a5568;
+        }
+
+        .feed-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+        }
+
+        .filter-tab {
+            padding: 6px 16px;
+            background: #2d3748;
+            border: none;
+            border-radius: 20px;
+            color: #9ca3af;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+
+        .filter-tab.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .claim-card {
+            background: #2d3748;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+        }
+
+        .claim-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .claim-card.high-risk {
+            border-left-color: #ef4444;
+        }
+
+        .claim-card.low-risk {
+            border-left-color: #10b981;
+        }
+
+        .claim-card.medium-risk {
+            border-left-color: #f59e0b;
+        }
+
+        .claim-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+
+        .claim-id {
+            font-weight: 600;
+            font-size: 15px;
+            color: #667eea;
+        }
+
+        .claim-amount {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .claim-info {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .info-item {
+            font-size: 13px;
+        }
+
+        .info-label {
+            color: #9ca3af;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .info-value {
+            color: #e8e6e3;
+            font-weight: 500;
+        }
+
+        .claim-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 15px;
+            border-top: 1px solid #4a5568;
+        }
+
+        .risk-badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .risk-badge.high {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .risk-badge.low {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .risk-badge.medium {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+
+        .review-btn {
+            padding: 8px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 13px;
+            transition: transform 0.2s;
+        }
+
+        .review-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* ============ CLAIM REVIEW SCREEN ============ */
+        .review-container {
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .review-header {
+            background: #1e2530;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+
+        .back-btn {
+            background: #2d3748;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            color: #9ca3af;
+            cursor: pointer;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .back-btn:hover {
+            background: #4a5568;
+        }
+
+        .review-title-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+        }
+
+        .claim-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .claim-subtitle {
+            color: #9ca3af;
+            font-size: 14px;
+        }
+
+        .risk-score-display {
+            text-align: right;
+        }
+
+        .risk-percentage {
+            font-size: 48px;
+            font-weight: 700;
+        }
+
+        .risk-percentage.high { color: #ef4444; }
+        .risk-percentage.low { color: #10b981; }
+        .risk-percentage.medium { color: #f59e0b; }
+
+        .risk-label {
+            font-size: 14px;
+            color: #9ca3af;
+            margin-top: 5px;
+        }
+
+        .review-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 25px;
+        }
+
+        .agents-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .agent-card {
+            background: #1e2530;
+            border-radius: 12px;
+            padding: 25px;
+            border-left: 4px solid #667eea;
+        }
+
+        .agent-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #4a5568;
+        }
+
+        .agent-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .agent-icon.identity { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .agent-icon.document { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .agent-icon.medical { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .agent-icon.fraud { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+
+        .agent-info {
+            flex: 1;
+        }
+
+        .agent-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .agent-status {
+            font-size: 13px;
+            color: #9ca3af;
+        }
+
+        .check-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .check-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #2d3748;
+            border-radius: 6px;
+        }
+
+        .check-label {
+            font-size: 14px;
+            color: #e8e6e3;
+        }
+
+        .check-status {
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .check-status.pass { color: #10b981; }
+        .check-status.fail { color: #ef4444; }
+        .check-status.warning { color: #f59e0b; }
+
+        .comparison-section {
+            background: #1e2530;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+
+        .comparison-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #4a5568;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .comparison-card {
+            background: #2d3748;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .comparison-card.mismatch {
+            border: 2px solid #ef4444;
+        }
+
+        .comparison-header {
+            font-size: 14px;
+            color: #9ca3af;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .comparison-field {
+            margin-bottom: 15px;
+        }
+
+        .field-label {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-bottom: 5px;
+        }
+
+        .field-value {
+            font-size: 15px;
+            font-weight: 600;
+            padding: 8px;
+            background: #1e2530;
+            border-radius: 4px;
+        }
+
+        .field-value.mismatch {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid #ef4444;
+        }
+
+        .field-value.match {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border: 1px solid #10b981;
+        }
+
+        .discrepancy-alert {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #ef4444;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            display: flex;
+            align-items: start;
+            gap: 10px;
+        }
+
+        .discrepancy-alert .icon {
+            font-size: 24px;
+        }
+
+        .discrepancy-content {
+            flex: 1;
+        }
+
+        .discrepancy-title {
+            font-weight: 600;
+            color: #ef4444;
+            margin-bottom: 5px;
+        }
+
+        .discrepancy-text {
+            font-size: 13px;
+            color: #e8e6e3;
+        }
+
+        .sidebar-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .info-panel {
+            background: #1e2530;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .panel-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #4a5568;
+        }
+
+        .panel-content {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .panel-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+        }
+
+        .panel-item-label {
+            color: #9ca3af;
+        }
+
+        .panel-item-value {
+            color: #e8e6e3;
+            font-weight: 500;
+        }
+
+        .hospital-verify-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: transform 0.2s;
+        }
+
+        .hospital-verify-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .hospital-verify-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .verification-result {
+            margin-top: 15px;
+            padding: 15px;
+            background: #2d3748;
+            border-radius: 6px;
+        }
+
+        .verification-result.success {
+            border-left: 4px solid #10b981;
+        }
+
+        .verification-result.fail {
+            border-left: 4px solid #ef4444;
+        }
+
+        .verification-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+
+        .verification-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .audit-timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 15px;
+            position: relative;
+        }
+
+        .timeline-item:not(:last-child)::before {
+            content: '';
+            position: absolute;
+            left: 9px;
+            top: 30px;
+            width: 2px;
+            height: calc(100% - 10px);
+            background: #4a5568;
+        }
+
+        .timeline-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            flex-shrink: 0;
+            margin-top: 3px;
+        }
+
+        .timeline-content {
+            flex: 1;
+        }
+
+        .timeline-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .timeline-desc {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-bottom: 3px;
+        }
+
+        .timeline-time {
+            font-size: 11px;
+            color: #6b7280;
+        }
+
+        .decision-panel {
+            background: #1e2530;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .decision-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .decision-btn {
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            font-size: 14px;
+        }
+
+        .decision-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .decision-btn.approve {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .decision-btn.escalate {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+        }
+
+        .decision-btn.reject {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1e2530;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-icon {
+            font-size: 60px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .modal-message {
+            text-align: center;
+            color: #9ca3af;
+            margin-bottom: 25px;
+        }
+
+        .modal-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============ SCREEN 1: LOGIN ============ -->
+    <div id="screen-login" class="screen active">
+        <div class="login-container">
+            <div class="login-box">
+                <div class="logo-section">
+                    <div class="logo-icon">🛡️</div>
+                    <div class="logo-text">Kavach Setu</div>
+                    <div class="logo-tagline">AI-Powered Fraud Detection & Claims Acceleration</div>
+                </div>
+                <form onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label>Employee ID</label>
+                        <input type="text" value="INS-2025-456" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" value="••••••••" required>
+                    </div>
+                    <button type="submit" class="login-btn">Login to Portal</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ SCREEN 2: DASHBOARD ============ -->
+    <div id="screen-dashboard" class="screen">
+        <div class="dashboard-container">
+            <aside class="sidebar">
+                <div class="sidebar-logo">🛡️ Kavach Setu</div>
+                <ul class="nav-menu">
+                    <li class="nav-item active">
+                        <span>📋</span>
+                        <span>Claims Feed</span>
+                    </li>
+                    <li class="nav-item">
+                        <span>🔍</span>
+                        <span>Investigation</span>
+                    </li>
+                    <li class="nav-item">
+                        <span>📊</span>
+                        <span>Analytics</span>
+                    </li>
+                    <li class="nav-item">
+                        <span>⚙️</span>
+                        <span>Settings</span>
+                    </li>
+                </ul>
+                <div class="stats-section">
+                    <div class="stats-title">Today's Statistics</div>
+                    <div class="stat-item">
+                        <span>Total Claims</span>
+                        <span class="stat-value">24</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Pending Review</span>
+                        <span class="stat-value">8</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Approved</span>
+                        <span class="stat-value" style="color: #10b981;">12</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Flagged</span>
+                        <span class="stat-value" style="color: #ef4444;">4</span>
+                    </div>
+                </div>
+            </aside>
+
+            <main class="main-content">
+                <div class="header">
+                    <div>
+                        <h1 class="header-title">Claims Review Dashboard</h1>
+                    </div>
+                    <div class="user-info">
+                        <div class="notification-badge">
+                            <span style="font-size: 24px;">🔔</span>
+                        </div>
+                        <div class="user-avatar">PJ</div>
+                        <div>
+                            <div style="font-weight: 600; font-size: 14px;">Priya Joshi</div>
+                            <div style="font-size: 12px; color: #9ca3af;">Senior Underwriter</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="claims-feed">
+                    <div class="feed-header">
+                        <h2 class="feed-title">Real-time Claims Feed</h2>
+                        <div class="filter-tabs">
+                            <button class="filter-tab active">All</button>
+                            <button class="filter-tab">High Risk</button>
+                            <button class="filter-tab">Pending</button>
+                        </div>
+                    </div>
+
+                    <!-- CLAIM 1: LOW RISK - GENUINE -->
+                    <div class="claim-card low-risk" onclick="reviewClaim('CLM2025-12345')">
+                        <div class="claim-header">
+                            <div>
+                                <div class="claim-id">CLM2025-12345</div>
+                                <div style="font-size: 13px; color: #9ca3af; margin-top: 4px;">Submitted 5 minutes ago</div>
+                            </div>
+                            <div class="claim-amount">₹85,000</div>
+                        </div>
+                        <div class="claim-info">
+                            <div class="info-item">
+                                <span class="info-label">Patient Name</span>
+                                <span class="info-value">Rajesh Kumar</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Hospital</span>
+                                <span class="info-value">Apollo Hospital, Bangalore</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Procedure</span>
+                                <span class="info-value">Appendectomy</span>
+                            </div>
+                        </div>
+                        <div class="claim-footer">
+                            <div class="risk-badge low">
+                                <span>●</span>
+                                <span>15% Risk - Low</span>
+                            </div>
+                            <button class="review-btn" onclick="reviewClaim('CLM2025-12345'); event.stopPropagation();">Review Claim →</button>
+                        </div>
+                    </div>
+
+                    <!-- CLAIM 2: HIGH RISK - FRAUD -->
+                    <div class="claim-card high-risk" onclick="reviewClaim('CLM2025-12346')">
+                        <div class="claim-header">
+                            <div>
+                                <div class="claim-id">CLM2025-12346</div>
+                                <div style="font-size: 13px; color: #9ca3af; margin-top: 4px;">Submitted 12 minutes ago</div>
+                            </div>
+                            <div class="claim-amount">₹3,50,000</div>
+                        </div>
+                        <div class="claim-info">
+                            <div class="info-item">
+                                <span class="info-label">Patient Name</span>
+                                <span class="info-value">Amit Sharma</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Hospital</span>
+                                <span class="info-value">Metro Hospital, Delhi</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Procedure</span>
+                                <span class="info-value">Cardiac Stent</span>
+                            </div>
+                        </div>
+                        <div class="claim-footer">
+                            <div class="risk-badge high">
+                                <span>●</span>
+                                <span>85% Risk - High</span>
+                            </div>
+                            <button class="review-btn" onclick="reviewClaim('CLM2025-12346'); event.stopPropagation();">Review Claim →</button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- ============ SCREEN 3: GENUINE CLAIM REVIEW ============ -->
+    <div id="screen-claim-genuine" class="screen">
+        <div class="review-container">
+            <div class="review-header">
+                <button class="back-btn" onclick="showScreen('screen-dashboard')">← Back to Dashboard</button>
+                <div class="review-title-section">
+                    <div>
+                        <h1 class="claim-title">Claim Review: CLM2025-12345</h1>
+                        <p class="claim-subtitle">Rajesh Kumar • Apollo Hospital, Bangalore • Appendectomy</p>
+                    </div>
+                    <div class="risk-score-display">
+                        <div class="risk-percentage low">15%</div>
+                        <div class="risk-label">Low Risk</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="review-grid">
+                <div class="agents-section">
+                    <!-- AGENT 1: IDENTITY VERIFICATION -->
+                    <div class="agent-card">
+                        <div class="agent-header">
+                            <div class="agent-icon identity">🆔</div>
+                            <div class="agent-info">
+                                <div class="agent-name">Identity Verification Agent</div>
+                                <div class="agent-status">Analysis Complete • All checks passed</div>
+                            </div>
+                        </div>
+                        <div class="check-list">
+                            <div class="check-item">
+                                <span class="check-label">Face Recognition Match</span>
+                                <span class="check-status pass">✅ 96% Match</span>
+                            </div>
+                            <div class="check-item">
+                                <span class="check-label">Aadhaar Verification</span>
+                                <span class="check-status pass">✅ Verified</span>
+                            </div>
+                            <div class="check-item">
+                                <span class="check-label">Signature Validation</span>
+                                <span class="check-status pass">✅ Consistent</span>
+                            </div>
+                            <div class="check-item">
+                                <span class="check-label">Age-Biometric Consistency</span>
+                                <span class="check-status pass">✅ Consistent</span>
+                            </div>
+                            <div class="check-item">
+                                <span class="check-label">Policy Status</span>
+                                <span class="check-status pass">✅ Active</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AGENT 2: DOCUMENT FORENSICS -->
+                    <div class="agent-card">
+                        <div class="agent-header">
+                            <div class="agent-icon document">📄</div>
+                            <div class="agent-info">
+                                <div class="agent-name">Document Forensics Agent</div>
+                                <div class="agent-status">Analysis Complete • No tampering detected</div>
+                            </div>
+                        </div>
+                        <div class="check-list">
+                            <div class="check-item">
+                                <span class="check-label">OCR Extraction Accuracy</span>
+                                <span class="check-status pass">✅ 98% Accuracy</span>
+                            </div>
+                            <div class="check-item">
+                                <span class="check-label">Document Tampering Check</span>
+                                <span class="check-status pass">✅ No tampering</span>
+                            </div>
+                            <div class="check-item">
+                                <span class="check-label">Metadata Validation</span>
+                                <span class="check-status pass">✅ Authentic</span>
+                            </div>
+                            <div class="check-item">
+                                <span class="check-label">Font/Ink Consistency</span>
+                                <span class="check-status pass">✅ Consistent</span>
+                            </div>
+                            <div class="check-item">
+                                <span class="check-label">Digital Signature</span>
+                                <span class="check-status pass">✅ Valid</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AGENT 3: MEDICAL LOGIC VALIDATOR -->
+                    <div class="agent-card">
+                        <div class="agent-header">
+                            <div class="agent-icon medical">🏥</div>
+                            <div class="agent-info">
+                                <div class="agent-name">Medical Logic Validator</div>
+                                <div class="agent-status">Analysis Complete • Treatment appropriate</div>
+                            </div>
+                        </div>
+                        <div class="check-list">
+                            <div class="check-item">
+                                <span class="check-label">Diagnosis-Treatment Consistency</span>
+                                <span class="check-status pass">✅ Appropriate</span>
+                            </div>
+                            <div class="check-item">
+                                <span class="check-label">ICD-10 Code Validation</span>
+                                <span class="check-status pass">✅ K35.80 (Correct)</span>
+                            </div>
+                            <div class="check-item">
+                                <span class="check-label">Procedure Code Check</span>
+                                <span class="check-status pass">✅ 44950 (Valid)</span>
+                            </div>
+                            <div class="check-item">
+                                <span class="check-label">Upcoding Detection</span>
+                                <span class="check-status pass">✅ No upcoding</span>
+                            </div>
+                            <div class="check-item">
+                                <span class="check-label">Cost Analysis</span>
+                                <span class="check-status pass">✅ Within range (₹80K-₹90K)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AGENT 4: FRAUD PATTERN RECOGNITION -->
+                    <div class="agent-card">
+                        <div class="agent-header">
+                            <div class="agent-icon fraud">🔍</div>
+                            <div class="agent-info">
+                                <div class="agent-name">Fraud Pattern Recognition Agent</div>
+                                <div class="agent-status">Analysis Complete • No fraud patterns</div>
+                            </div>
+                        </div>
+                        <div class="check-list">
+                            <div class="check-item">
+                                <span class="check-label">Duplicate Claim Check</span>
+                                <span class="check-status pass">✅ No duplicates</span>
+                            </div>
+                            <div class="check-item">
+                                <span class="check-label">Hospital-Patient Collusion</span>
+                                <span class="check-status pass">✅ No red flags</span>
+                            </div>
+                            <div class="check-item">
+                                <span class="check-label">Historical Pattern Analysis</span>
+                                <span class="check-status pass">✅ Normal pattern</span>
+                            </div>
+                            <div class="check-item">
+                                <span class="check-label">Provider Network Check</span>
+                                <span class="check-status pass">✅ Trusted provider</span>
+                            </div>
+                            <div class="check-item">
+                                <span class="check-label">Claim Frequency</span>
+                                <span class="check-status pass">✅ First claim in 2 years</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-panel">
+                    <!-- PATIENT INFO -->
+                    <div class="info-panel">
+                        <h3 class="panel-title">Patient Information</h3>
+                        <div class="panel-content">
+                            <div class="panel-item">
+                                <span class="panel-item-label">Name</span>
+                                <span class="panel-item-value">Rajesh Kumar</span>
+                            </div>
+                            <div class="panel-item">
+                                <span class="panel-item-label">Age</span>
+                                <span class="panel-item-value">35 years</span>
+                            </div>
+                            <div class="panel-item">
+                                <span class="panel-item-label">Policy Number</span>
+                                <span class="panel-item-value">POL-2023-789456</span>
+                            </div>
+                            <div class="panel-item">
+                                <span class="panel-item-label">Coverage</span>
+                                <span class="panel-item-value">₹5,00,000</span>
+                            </div>
+                            <div class="panel-item">
+                                <span class="panel-item-label">Premium Status</span>
+                                <span class="panel-item-value" style="color: #10b981;">Paid ✓</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- HOSPITAL VERIFICATION -->
+                    <div class="info-panel">
+                        <h3 class="panel-title">Hospital Verification</h3>
+                        <div class="panel-content">
+                            <div class="panel-item">
+                                <span class="panel-item-label">Hospital</span>
+                                <span class="panel-item-value">Apollo Hospital</span>
+                            </div>
+                            <div class="panel-item">
+                                <span class="panel-item-label">Location</span>
+                                <span class="panel-item-value">Bangalore</span>
+                            </div>
+                            <div class="panel-item">
+                                <span class="panel-item-label">Admission Date</span>
+                                <span class="panel-item-value">15-Mar-2025</span>
+                            </div>
+                            <div class="panel-item">
+                                <span class="panel-item-label">Discharge Date</span>
+                                <span class="panel-item-value">17-Mar-2025</span>
+                            </div>
+                        </div>
+                        <button class="hospital-verify-btn" id="verifyBtn-genuine" onclick="verifyHospital('genuine')">
+                            🏥 Verify with Hospital API
+                        </button>
+                        <div id="verifyResult-genuine" class="hidden"></div>
+                    </div>
+
+                    <!-- AUDIT TRAIL -->
+                    <div class="info-panel">
+                        <h3 class="panel-title">Audit Trail</h3>
+                        <div class="audit-timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-content">
+                                    <div class="timeline-title">Claim Submitted</div>
+                                    <div class="timeline-desc">Customer portal submission</div>
+                                    <div class="timeline-time">Today, 2:45 PM</div>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-content">
+                                    <div class="timeline-title">AI Analysis Started</div>
+                                    <div class="timeline-desc">4 agents activated</div>
+                                    <div class="timeline-time">Today, 2:45 PM</div>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-content">
+                                    <div class="timeline-title">Analysis Complete</div>
+                                    <div class="timeline-desc">Risk score: 15%</div>
+                                    <div class="timeline-time">Today, 2:47 PM</div>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-content">
+                                    <div class="timeline-title">Under Review</div>
+                                    <div class="timeline-desc">Assigned to Priya Joshi</div>
+                                    <div class="timeline-time">Today, 2:50 PM</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- DECISION PANEL -->
+                    <div class="decision-panel">
+                        <h3 class="panel-title">Decision</h3>
+                        <div class="decision-buttons">
+                            <button class="decision-btn approve" onclick="handleDecision('approve', 'genuine')">
+                                ✅ Approve Claim
+                            </button>
+                            <button class="decision-btn escalate">
+                                ⚠️ Request More Info
+                            </button>
+                            <button class="decision-btn reject">
+                                ❌ Reject Claim
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ SCREEN 4: FRAUD CLAIM REVIEW ============ -->
+    <div id="screen-claim-fraud" class="screen">
+        <div class="review-container">
+            <div class="review-header">
+                <button class="back-btn" onclick="showScreen('screen-dashboard')">← Back to Dashboard</button>
+                <div class="review-title-section">
+                    <div>
+                        <h1 class="claim-title">Claim Review: CLM2025-12346</h1>
+                        <p class="claim-subtitle">Amit Sharma • Metro Hospital, Delhi • Cardiac Stent</p>
+                    </div>
+                    <div class="risk-score-display">
+                        <div class="risk-percentage high">85%</div>
+                        <div class="risk-label">High Risk</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="review-grid">
+                <div class="agents-section">
+                    <!-- AGENT 1: IDENTITY VERIFICATION - FRAUD -->
+                    <div class="agent-card">
+                        <div class="agent-header">
+                            <div class="agent-icon identity">🆔</div>
+                            <div class="agent-info">
+                                <div class="agent-name">Identity Verification Agent</div>
+                                <div class="agent-status" style="color: #ef4444;">⚠️ CRITICAL ISSUES DETECTED</div>
+                            </div>
+                        </div>
+                        <div class="check-list">
+                            <div class="check-item">
+                                <span class="check-label">Face Recognition Match</span>
+                                <span class="check-status fail">❌ 12% Match (FAIL)</span>
+                            </div>
+                            <div class="check-item">
+                                <span class="check-label">Aadhaar Verification</span>
+                                <span class="check-status fail">❌ Photo Mismatch</span>
+                            </div>
+                            <div class="check-item">
+                                <span class="check-label">Signature Validation</span>
+                                <span class="check-status fail">❌ Different Handwriting</span>
+                            </div>
+                            <div class="check-item">
+                                <span class="check-label">Age-Biometric Consistency</span>
+                                <span class="check-status fail">❌ ~20 year discrepancy</span>
+                            </div>
+                            <div class="check-item">
+                                <span class="check-label">Policy Status</span>
+                                <span class="check-status pass">✅ Active</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AGENT 2: DOCUMENT FORENSICS - FRAUD -->
+                    <div class="agent-card">
+                        <div class="agent-header">
+                            <div class="agent-icon document">📄</div>
+                            <div class="agent-info">
+                                <div class="agent-name">Document Forensics Agent</div>
+                                <div class="agent-status" style="color: #ef4444;">⚠️ TAMPERING DETECTED</div>
+                            </div>
+                        </div>
+                        <div class="check-list">
+                            <div class="check-item">
+                                <span class="check-label">OCR Extraction Accuracy</span>
+                                <span class="check-status warning">⚠️ 82% Accuracy (Low)</span>
+                            </div>
+                            <div class="check-item">
+                                <span class="check-label">Document Tampering Check</span>
+                                <span class="check-status fail">❌ Font mismatch detected</span>
+                            </div>
+                            <div class="check-item">
+                                <span class="check-label">Metadata Validation</span>
+                                <span class="check-status fail">❌ Edited after issue date</span>
+                            </div>
+                            <div class="check-item">
+                                <span class="check-label">Font/Ink Consistency</span>
+                                <span class="check-status fail">❌ Different ink color</span>
+                            </div>
+                            <div class="check-item">
+                                <span class="check-label">Digital Signature</span>
+                                <span class="check-status fail">❌ Signature broken</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AGENT 3: MEDICAL LOGIC VALIDATOR - FRAUD -->
+                    <div class="agent-card">
+                        <div class="agent-header">
+                            <div class="agent-icon medical">🏥</div>
+                            <div class="agent-info">
+                                <div class="agent-name">Medical Logic Validator</div>
+                                <div class="agent-status" style="color: #ef4444;">⚠️ INCONSISTENCIES FOUND</div>
+                            </div>
+                        </div>
+                        <div class="check-list">
+                            <div class="check-item">
+                                <span class="check-label">Diagnosis-Treatment Consistency</span>
+                                <span class="check-status fail">❌ Procedure doesn't match</span>
+                            </div>
+                            <div class="check-item">
+                                <span class="check-label">ICD-10 Code Validation</span>
+                                <span class="check-status warning">⚠️ I25.1 (Needs review)</span>
+                            </div>
+                            <div class="check-item">
+                                <span class="check-label">Procedure Code Check</span>
+                                <span class="check-status fail">❌ CS-801 vs AG-452 (Mismatch)</span>
+                            </div>
+                            <div class="check-item">
+                                <span class="check-label">Upcoding Detection</span>
+                                <span class="check-status fail">❌ Procedure upgraded</span>
+                            </div>
+                            <div class="check-item">
+                                <span class="check-label">Cost Analysis</span>
+                                <span class="check-status fail">❌ 46% above standard</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AGENT 4: FRAUD PATTERN RECOGNITION - FRAUD -->
+                    <div class="agent-card">
+                        <div class="agent-header">
+                            <div class="agent-icon fraud">🔍</div>
+                            <div class="agent-info">
+                                <div class="agent-name">Fraud Pattern Recognition Agent</div>
+                                <div class="agent-status" style="color: #ef4444;">⚠️ FRAUD PATTERNS DETECTED</div>
+                            </div>
+                        </div>
+                        <div class="check-list">
+                            <div class="check-item">
+                                <span class="check-label">Duplicate Claim Check</span>
+                                <span class="check-status pass">✅ No duplicates</span>
+                            </div>
+                            <div class="check-item">
+                                <span class="check-label">Hospital-Patient Collusion</span>
+                                <span class="check-status fail">❌ Hospital flagged (3 cases)</span>
+                            </div>
+                            <div class="check-item">
+                                <span class="check-label">Historical Pattern Analysis</span>
+                                <span class="check-status warning">⚠️ Suspicious pattern</span>
+                            </div>
+                            <div class="check-item">
+                                <span class="check-label">Provider Network Check</span>
+                                <span class="check-status warning">⚠️ Under investigation</span>
+                            </div>
+                            <div class="check-item">
+                                <span class="check-label">Claim Frequency</span>
+                                <span class="check-status warning">⚠️ 3rd claim in 6 months</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- DOCUMENT COMPARISON SECTION -->
+                    <div class="comparison-section">
+                        <h3 class="comparison-title">📄 Document Comparison: Submitted vs Hospital Records</h3>
+                        <div class="comparison-grid">
+                            <div class="comparison-card">
+                                <div class="comparison-header">Submitted by Claimant</div>
+                                <div class="comparison-field">
+                                    <div class="field-label">Procedure</div>
+                                    <div class="field-value mismatch">Cardiac Stent Placement</div>
+                                </div>
+                                <div class="comparison-field">
+                                    <div class="field-label">Procedure Code</div>
+                                    <div class="field-value mismatch">CS-801</div>
+                                </div>
+                                <div class="comparison-field">
+                                    <div class="field-label">Total Cost</div>
+                                    <div class="field-value mismatch">₹3,50,000</div>
+                                </div>
+                                <div class="comparison-field">
+                                    <div class="field-label">Date</div>
+                                    <div class="field-value match">10-Mar-2025</div>
+                                </div>
+                            </div>
+                            <div class="comparison-card mismatch">
+                                <div class="comparison-header">Hospital Records (API Verified)</div>
+                                <div class="comparison-field">
+                                    <div class="field-label">Procedure</div>
+                                    <div class="field-value match">Angioplasty</div>
+                                </div>
+                                <div class="comparison-field">
+                                    <div class="field-label">Procedure Code</div>
+                                    <div class="field-value match">AG-452</div>
+                                </div>
+                                <div class="comparison-field">
+                                    <div class="field-label">Total Cost</div>
+                                    <div class="field-value match">₹2,40,000</div>
+                                </div>
+                                <div class="comparison-field">
+                                    <div class="field-label">Date</div>
+                                    <div class="field-value match">10-Mar-2025</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="discrepancy-alert">
+                            <div class="icon">⚠️</div>
+                            <div class="discrepancy-content">
+                                <div class="discrepancy-title">COST DISCREPANCY: ₹1,10,000</div>
+                                <div class="discrepancy-text">
+                                    The submitted claim shows a "Cardiac Stent Placement" costing ₹3,50,000, but hospital records confirm only an "Angioplasty" procedure was performed, costing ₹2,40,000. Document appears to have been altered post-discharge with procedure code upgraded.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-panel">
+                    <!-- PATIENT INFO -->
+                    <div class="info-panel">
+                        <h3 class="panel-title">Patient Information</h3>
+                        <div class="panel-content">
+                            <div class="panel-item">
+                                <span class="panel-item-label">Name</span>
+                                <span class="panel-item-value">Amit Sharma</span>
+                            </div>
+                            <div class="panel-item">
+                                <span class="panel-item-label">Age</span>
+                                <span class="panel-item-value">42 years</span>
+                            </div>
+                            <div class="panel-item">
+                                <span class="panel-item-label">Policy Number</span>
+                                <span class="panel-item-value">POL-2022-456123</span>
+                            </div>
+                            <div class="panel-item">
+                                <span class="panel-item-label">Coverage</span>
+                                <span class="panel-item-value">₹10,00,000</span>
+                            </div>
+                            <div class="panel-item">
+                                <span class="panel-item-label">Premium Status</span>
+                                <span class="panel-item-value" style="color: #10b981;">Paid ✓</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- HOSPITAL VERIFICATION -->
+                    <div class="info-panel">
+                        <h3 class="panel-title">Hospital Verification</h3>
+                        <div class="panel-content">
+                            <div class="panel-item">
+                                <span class="panel-item-label">Hospital</span>
+                                <span class="panel-item-value">Metro Hospital</span>
+                            </div>
+                            <div class="panel-item">
+                                <span class="panel-item-label">Location</span>
+                                <span class="panel-item-value">Delhi</span>
+                            </div>
+                            <div class="panel-item">
+                                <span class="panel-item-label">Admission Date</span>
+                                <span class="panel-item-value">10-Mar-2025</span>
+                            </div>
+                            <div class="panel-item">
+                                <span class="panel-item-label">Discharge Date</span>
+                                <span class="panel-item-value">12-Mar-2025</span>
+                            </div>
+                        </div>
+                        <button class="hospital-verify-btn" id="verifyBtn-fraud" onclick="verifyHospital('fraud')">
+                            🏥 Verify with Hospital API
+                        </button>
+                        <div id="verifyResult-fraud" class="hidden"></div>
+                    </div>
+
+                    <!-- AUDIT TRAIL -->
+                    <div class="info-panel">
+                        <h3 class="panel-title">Audit Trail</h3>
+                        <div class="audit-timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-content">
+                                    <div class="timeline-title">Claim Submitted</div>
+                                    <div class="timeline-desc">Customer portal submission</div>
+                                    <div class="timeline-time">Today, 2:38 PM</div>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-content">
+                                    <div class="timeline-title">AI Analysis Started</div>
+                                    <div class="timeline-desc">4 agents activated</div>
+                                    <div class="timeline-time">Today, 2:38 PM</div>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-dot" style="background: #ef4444;"></div>
+                                <div class="timeline-content">
+                                    <div class="timeline-title" style="color: #ef4444;">⚠️ Fraud Flags Raised</div>
+                                    <div class="timeline-desc">Multiple red flags detected</div>
+                                    <div class="timeline-time">Today, 2:39 PM</div>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-dot" style="background: #ef4444;"></div>
+                                <div class="timeline-content">
+                                    <div class="timeline-title" style="color: #ef4444;">High Risk - Auto-Escalated</div>
+                                    <div class="timeline-desc">Risk score: 85%</div>
+                                    <div class="timeline-time">Today, 2:41 PM</div>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-content">
+                                    <div class="timeline-title">Under Review</div>
+                                    <div class="timeline-desc">Assigned to Priya Joshi</div>
+                                    <div class="timeline-time">Today, 2:50 PM</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- DECISION PANEL -->
+                    <div class="decision-panel">
+                        <h3 class="panel-title">Decision</h3>
+                        <div class="decision-buttons">
+                            <button class="decision-btn escalate" onclick="handleDecision('escalate', 'fraud')">
+                                🚨 Escalate to Fraud Team
+                            </button>
+                            <button class="decision-btn reject" onclick="handleDecision('reject', 'fraud')">
+                                ❌ Reject Claim
+                            </button>
+                            <button class="decision-btn approve" style="opacity: 0.5; cursor: not-allowed;" disabled>
+                                ✅ Approve Claim (Disabled)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ MODAL ============ -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-icon" id="modalIcon">🔔</div>
+            <h2 class="modal-title" id="modalTitle">New Claim Alert</h2>
+            <p class="modal-message" id="modalMessage">A new claim has been submitted and requires your review.</p>
+            <button class="modal-btn" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            showScreen('screen-dashboard');
+            setTimeout(() => {
+                showNotification();
+            }, 1000);
+        }
+
+        function showNotification() {
+            const modal = document.getElementById('modal');
+            document.getElementById('modalIcon').textContent = '🔔';
+            document.getElementById('modalTitle').textContent = 'New Claim Alert';
+            document.getElementById('modalMessage').textContent = 'Rajesh Kumar has submitted a new claim for Appendectomy (₹85,000). Click to review.';
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        function reviewClaim(claimId) {
+            if (claimId === 'CLM2025-12345') {
+                showScreen('screen-claim-genuine');
+            } else if (claimId === 'CLM2025-12346') {
+                showScreen('screen-claim-fraud');
+            }
+        }
+
+        function verifyHospital(type) {
+            const btn = document.getElementById('verifyBtn-' + type);
+            const resultDiv = document.getElementById('verifyResult-' + type);
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-spinner"></span> Verifying...';
+
+            setTimeout(() => {
+                btn.style.display = 'none';
+                resultDiv.classList.remove('hidden');
+
+                if (type === 'genuine') {
+                    resultDiv.className = 'verification-result success';
+                    resultDiv.innerHTML = `
+                        <div style="font-weight: 600; margin-bottom: 10px; color: #10b981;">✅ Verification Successful (10 seconds)</div>
+                        <div class="verification-item">
+                            <span>Admission Confirmed:</span>
+                            <span style="color: #10b981;">✅ Yes</span>
+                        </div>
+                        <div class="verification-item">
+                            <span>Procedure Verified:</span>
+                            <span style="color: #10b981;">✅ Appendectomy</span>
+                        </div>
+                        <div class="verification-item">
+                            <span>Bill Amount:</span>
+                            <span style="color: #10b981;">✅ ₹85,000</span>
+                        </div>
+                        <div class="verification-item">
+                            <span>Surgeon:</span>
+                            <span style="color: #10b981;">✅ Dr. Ramesh Gupta</span>
+                        </div>
+                        <div class="verification-item">
+                            <span>Confidence:</span>
+                            <span style="color: #10b981; font-weight: 600;">98%</span>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.className = 'verification-result fail';
+                    resultDiv.innerHTML = `
+                        <div style="font-weight: 600; margin-bottom: 10px; color: #ef4444;">❌ Verification Failed (10 seconds)</div>
+                        <div class="verification-item">
+                            <span>Admission Confirmed:</span>
+                            <span style="color: #10b981;">✅ Yes</span>
+                        </div>
+                        <div class="verification-item">
+                            <span>Procedure Verified:</span>
+                            <span style="color: #ef4444;">❌ Angioplasty (NOT Cardiac Stent)</span>
+                        </div>
+                        <div class="verification-item">
+                            <span>Bill Amount:</span>
+                            <span style="color: #ef4444;">❌ ₹2,40,000 (NOT ₹3,50,000)</span>
+                        </div>
+                        <div class="verification-item">
+                            <span>Discrepancy:</span>
+                            <span style="color: #ef4444; font-weight: 600;">₹1,10,000</span>
+                        </div>
+                        <div class="verification-item">
+                            <span>Fraud Risk:</span>
+                            <span style="color: #ef4444; font-weight: 600;">HIGH</span>
+                        </div>
+                    `;
+                }
+            }, 3000);
+        }
+
+        function handleDecision(decision, type) {
+            const modal = document.getElementById('modal');
+
+            if (decision === 'approve') {
+                document.getElementById('modalIcon').textContent = '✅';
+                document.getElementById('modalTitle').textContent = 'Claim Approved';
+                document.getElementById('modalMessage').textContent = `Claim CLM2025-12345 has been approved. Payment of ₹85,000 will be processed within 48 hours.`;
+            } else if (decision === 'escalate') {
+                document.getElementById('modalIcon').textContent = '🚨';
+                document.getElementById('modalTitle').textContent = 'Claim Escalated';
+                document.getElementById('modalMessage').textContent = `Claim CLM2025-12346 has been escalated to the fraud investigation team. They will conduct a detailed investigation.`;
+            } else if (decision === 'reject') {
+                document.getElementById('modalIcon').textContent = '❌';
+                document.getElementById('modalTitle').textContent = 'Claim Rejected';
+                document.getElementById('modalMessage').textContent = `Claim CLM2025-12346 has been rejected due to document tampering and cost discrepancies. Customer will be notified.`;
+            }
+
+            modal.classList.add('active');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claims Review Dashboard - Kavach Setu</title>
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <style>
+        body {
+            background-color: var(--gray-50);
+        }
+
+        .filter-bar {
+            background: white;
+            padding: 1.5rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-bar select {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius);
+            min-width: 150px;
+        }
+
+        .claims-feed {
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .feed-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .claim-card {
+            padding: 1.5rem;
+            border-left: 4px solid var(--gray-300);
+            border-bottom: 1px solid var(--gray-100);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .claim-card:hover {
+            background-color: var(--gray-50);
+        }
+
+        .claim-card.risk-low {
+            border-left-color: var(--success);
+        }
+
+        .claim-card.risk-medium {
+            border-left-color: var(--warning);
+        }
+
+        .claim-card.risk-high {
+            border-left-color: var(--danger);
+        }
+
+        .claim-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .claim-card-id {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary-start);
+        }
+
+        .claim-card-body {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .claim-info-item {
+            font-size: 0.875rem;
+        }
+
+        .claim-info-label {
+            color: var(--gray-600);
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .claim-info-value {
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .claim-card-body {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .empty-feed {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--gray-500);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="dashboard.html" class="navbar-brand">🛡️ Kavach Setu - Insurer Portal</a>
+            <div class="navbar-menu">
+                <a href="dashboard.html" class="navbar-link">Claims Feed</a>
+                <span id="userDisplay" class="navbar-link"></span>
+                <button onclick="auth.logout()" class="navbar-logout">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
+        <h1>Claims Review Dashboard</h1>
+        <p style="color: var(--gray-600); margin-bottom: 2rem;">
+            Review and process submitted insurance claims
+        </p>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <label>
+                <strong>Status:</strong>
+                <select id="filterStatus" onchange="applyFilters()">
+                    <option value="">All Statuses</option>
+                    <option value="submitted">Submitted</option>
+                    <option value="under_review" selected>Under Review</option>
+                    <option value="pending_documents">Pending Documents</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                </select>
+            </label>
+
+            <label>
+                <strong>Risk Level:</strong>
+                <select id="filterRisk" onchange="applyFilters()">
+                    <option value="">All Risk Levels</option>
+                    <option value="low">Low Risk</option>
+                    <option value="medium">Medium Risk</option>
+                    <option value="high">High Risk</option>
+                </select>
+            </label>
+
+            <div style="margin-left: auto;">
+                <button class="btn btn-secondary btn-sm" onclick="loadClaims()">
+                    🔄 Refresh
+                </button>
+            </div>
+        </div>
+
+        <!-- Claims Feed -->
+        <div class="claims-feed">
+            <div class="feed-header">
+                <h3 style="margin: 0;">Claims Feed</h3>
+                <span id="claimsCount" style="color: var(--gray-600); font-size: 0.875rem;">
+                    Loading...
+                </span>
+            </div>
+
+            <div id="claimsFeedContainer">
+                <div style="text-align: center; padding: 3rem;">
+                    <div class="spinner"></div>
+                    <p>Loading claims...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../assets/js/config.js"></script>
+    <script src="../assets/js/auth.js"></script>
+    <script src="../assets/js/api.js"></script>
+    <script>
+        // Check authentication
+        if (!auth.requireAuth()) {
+            // Will redirect to login
+        }
+
+        let allClaims = [];
+
+        // Load user info
+        const userInfo = JSON.parse(localStorage.getItem('user_info'));
+        if (userInfo) {
+            document.getElementById('userDisplay').textContent = `${userInfo.full_name} (${userInfo.role})`;
+        }
+
+        // Load claims on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadClaims();
+        });
+
+        async function loadClaims() {
+            try {
+                api.showLoading('Loading claims feed...');
+
+                allClaims = await api.call(
+                    getApiUrl(API_CONFIG.EMPLOYEE.CLAIMS_FEED),
+                    { method: 'GET' }
+                );
+
+                api.hideLoading();
+
+                applyFilters();
+
+            } catch (error) {
+                api.hideLoading();
+                console.error('Error loading claims:', error);
+                api.showError('Failed to load claims feed');
+
+                document.getElementById('claimsFeedContainer').innerHTML = `
+                    <div style="text-align: center; padding: 3rem; color: var(--danger);">
+                        <p>Failed to load claims feed</p>
+                        <button class="btn btn-primary btn-sm mt-2" onclick="loadClaims()">
+                            Try Again
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        function applyFilters() {
+            const statusFilter = document.getElementById('filterStatus').value;
+            const riskFilter = document.getElementById('filterRisk').value;
+
+            let filteredClaims = allClaims;
+
+            if (statusFilter) {
+                filteredClaims = filteredClaims.filter(c => c.status === statusFilter);
+            }
+
+            if (riskFilter) {
+                filteredClaims = filteredClaims.filter(c => c.risk_level?.toLowerCase() === riskFilter);
+            }
+
+            renderClaims(filteredClaims);
+        }
+
+        function renderClaims(claims) {
+            const container = document.getElementById('claimsFeedContainer');
+            const countEl = document.getElementById('claimsCount');
+
+            countEl.textContent = `${claims.length} claim(s)`;
+
+            if (claims.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-feed">
+                        <div style="font-size: 4rem; margin-bottom: 1rem;">📋</div>
+                        <h3>No Claims Found</h3>
+                        <p>No claims match your current filters.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Sort by submitted_at (newest first)
+            claims.sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at));
+
+            container.innerHTML = claims.map(claim => {
+                const riskClass = claim.risk_level ? `risk-${claim.risk_level.toLowerCase()}` : '';
+
+                return `
+                    <div class="claim-card ${riskClass}" onclick="reviewClaim('${claim.claim_id}')">
+                        <div class="claim-card-header">
+                            <div class="claim-card-id">${claim.claim_id}</div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                ${utils.getStatusBadge(claim.status)}
+                                ${claim.risk_level ? utils.getRiskBadge(claim.risk_level) : ''}
+                            </div>
+                        </div>
+
+                        <div class="claim-card-body">
+                            <div class="claim-info-item">
+                                <span class="claim-info-label">Patient</span>
+                                <div class="claim-info-value">${claim.patient_name}</div>
+                            </div>
+
+                            <div class="claim-info-item">
+                                <span class="claim-info-label">Hospital</span>
+                                <div class="claim-info-value">${claim.hospital_name || 'N/A'}</div>
+                            </div>
+
+                            <div class="claim-info-item">
+                                <span class="claim-info-label">Location</span>
+                                <div class="claim-info-value">${claim.hospital_location || 'N/A'}</div>
+                            </div>
+
+                            <div class="claim-info-item">
+                                <span class="claim-info-label">Claim Amount</span>
+                                <div class="claim-info-value" style="color: var(--primary-start);">
+                                    ${utils.formatCurrency(claim.claim_amount)}
+                                </div>
+                            </div>
+
+                            <div class="claim-info-item">
+                                <span class="claim-info-label">Submitted</span>
+                                <div class="claim-info-value">${utils.formatDate(claim.submitted_at)}</div>
+                            </div>
+
+                            <div class="claim-info-item">
+                                <span class="claim-info-label">AI Analysis</span>
+                                <div class="claim-info-value">
+                                    ${claim.ai_analysis_status === 'completed' ?
+                                        '<span class="badge badge-success">✓ Complete</span>' :
+                                        claim.ai_analysis_status === 'in_progress' ?
+                                        '<span class="badge badge-info">⏳ Processing</span>' :
+                                        '<span class="badge badge-secondary">Pending</span>'
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        ${claim.diagnosis ? `
+                            <div style="font-size: 0.875rem; color: var(--gray-600); margin-top: 0.5rem;">
+                                <strong>Diagnosis:</strong> ${claim.diagnosis}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function reviewClaim(claimId) {
+            window.location.href = `claim-review.html?claim_id=${claimId}`;
+        }
+    </script>
+</body>
+</html>
